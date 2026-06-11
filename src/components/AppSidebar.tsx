@@ -1,5 +1,5 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Calendar, ListTodo, CalendarCheck2 } from "lucide-react";
+import { LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet, Target } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,6 +15,10 @@ import {
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Calendario", url: "/calendario", icon: Calendar },
+  { title: "Gantt", url: "/gantt", icon: GanttChartSquare },
+  { title: "Riesgos", url: "/riesgos", icon: ShieldAlert },
+  { title: "Presupuesto", url: "/presupuesto", icon: Wallet },
+  { title: "OKR", url: "/okr", icon: Target },
   { title: "Actividades", url: "/actividades", icon: ListTodo },
 ];
 

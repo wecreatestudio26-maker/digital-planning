@@ -9,10 +9,34 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as RiesgosRouteImport } from './routes/riesgos'
+import { Route as PresupuestoRouteImport } from './routes/presupuesto'
+import { Route as OkrRouteImport } from './routes/okr'
+import { Route as GanttRouteImport } from './routes/gantt'
 import { Route as CalendarioRouteImport } from './routes/calendario'
 import { Route as ActividadesRouteImport } from './routes/actividades'
 import { Route as IndexRouteImport } from './routes/index'
 
+const RiesgosRoute = RiesgosRouteImport.update({
+  id: '/riesgos',
+  path: '/riesgos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PresupuestoRoute = PresupuestoRouteImport.update({
+  id: '/presupuesto',
+  path: '/presupuesto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const OkrRoute = OkrRouteImport.update({
+  id: '/okr',
+  path: '/okr',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const GanttRoute = GanttRouteImport.update({
+  id: '/gantt',
+  path: '/gantt',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CalendarioRoute = CalendarioRouteImport.update({
   id: '/calendario',
   path: '/calendario',
@@ -33,34 +57,100 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
   '/calendario': typeof CalendarioRoute
+  '/gantt': typeof GanttRoute
+  '/okr': typeof OkrRoute
+  '/presupuesto': typeof PresupuestoRoute
+  '/riesgos': typeof RiesgosRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
   '/calendario': typeof CalendarioRoute
+  '/gantt': typeof GanttRoute
+  '/okr': typeof OkrRoute
+  '/presupuesto': typeof PresupuestoRoute
+  '/riesgos': typeof RiesgosRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
   '/calendario': typeof CalendarioRoute
+  '/gantt': typeof GanttRoute
+  '/okr': typeof OkrRoute
+  '/presupuesto': typeof PresupuestoRoute
+  '/riesgos': typeof RiesgosRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/actividades' | '/calendario'
+  fullPaths:
+    | '/'
+    | '/actividades'
+    | '/calendario'
+    | '/gantt'
+    | '/okr'
+    | '/presupuesto'
+    | '/riesgos'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/actividades' | '/calendario'
-  id: '__root__' | '/' | '/actividades' | '/calendario'
+  to:
+    | '/'
+    | '/actividades'
+    | '/calendario'
+    | '/gantt'
+    | '/okr'
+    | '/presupuesto'
+    | '/riesgos'
+  id:
+    | '__root__'
+    | '/'
+    | '/actividades'
+    | '/calendario'
+    | '/gantt'
+    | '/okr'
+    | '/presupuesto'
+    | '/riesgos'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActividadesRoute: typeof ActividadesRoute
   CalendarioRoute: typeof CalendarioRoute
+  GanttRoute: typeof GanttRoute
+  OkrRoute: typeof OkrRoute
+  PresupuestoRoute: typeof PresupuestoRoute
+  RiesgosRoute: typeof RiesgosRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/riesgos': {
+      id: '/riesgos'
+      path: '/riesgos'
+      fullPath: '/riesgos'
+      preLoaderRoute: typeof RiesgosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/presupuesto': {
+      id: '/presupuesto'
+      path: '/presupuesto'
+      fullPath: '/presupuesto'
+      preLoaderRoute: typeof PresupuestoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/okr': {
+      id: '/okr'
+      path: '/okr'
+      fullPath: '/okr'
+      preLoaderRoute: typeof OkrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/gantt': {
+      id: '/gantt'
+      path: '/gantt'
+      fullPath: '/gantt'
+      preLoaderRoute: typeof GanttRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/calendario': {
       id: '/calendario'
       path: '/calendario'
@@ -89,17 +179,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActividadesRoute: ActividadesRoute,
   CalendarioRoute: CalendarioRoute,
+  GanttRoute: GanttRoute,
+  OkrRoute: OkrRoute,
+  PresupuestoRoute: PresupuestoRoute,
+  RiesgosRoute: RiesgosRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
