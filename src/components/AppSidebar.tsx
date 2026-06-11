@@ -15,6 +15,7 @@ import {
 const items = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Calendario", url: "/calendario", icon: Calendar },
+  { title: "Actividades", url: "/actividades", icon: ListTodo },
   { title: "Gantt", url: "/gantt", icon: GanttChartSquare },
   { title: "Riesgos", url: "/riesgos", icon: ShieldAlert },
   { title: "Presupuesto", url: "/presupuesto", icon: Wallet },
