@@ -9,17 +9,68 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as VelocidadRouteImport } from './routes/velocidad'
+import { Route as TiempoRouteImport } from './routes/tiempo'
+import { Route as SprintsRouteImport } from './routes/sprints'
+import { Route as RoadmapRouteImport } from './routes/roadmap'
 import { Route as RiesgosRouteImport } from './routes/riesgos'
+import { Route as ReunionesRouteImport } from './routes/reuniones'
+import { Route as ReglasRouteImport } from './routes/reglas'
+import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
 import { Route as PresupuestoRouteImport } from './routes/presupuesto'
+import { Route as PlantillasRouteImport } from './routes/plantillas'
 import { Route as OkrRouteImport } from './routes/okr'
+import { Route as HabitosRouteImport } from './routes/habitos'
 import { Route as GanttRouteImport } from './routes/gantt'
+import { Route as EvaluacionRouteImport } from './routes/evaluacion'
+import { Route as EstimadoVsRealRouteImport } from './routes/estimado-vs-real'
+import { Route as EquipoRouteImport } from './routes/equipo'
+import { Route as EnfoqueRouteImport } from './routes/enfoque'
+import { Route as CargaRouteImport } from './routes/carga'
 import { Route as CalendarioRouteImport } from './routes/calendario'
+import { Route as AutoEstadosRouteImport } from './routes/auto-estados'
+import { Route as AlertasRouteImport } from './routes/alertas'
 import { Route as ActividadesRouteImport } from './routes/actividades'
 import { Route as IndexRouteImport } from './routes/index'
 
+const VelocidadRoute = VelocidadRouteImport.update({
+  id: '/velocidad',
+  path: '/velocidad',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TiempoRoute = TiempoRouteImport.update({
+  id: '/tiempo',
+  path: '/tiempo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SprintsRoute = SprintsRouteImport.update({
+  id: '/sprints',
+  path: '/sprints',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RoadmapRoute = RoadmapRouteImport.update({
+  id: '/roadmap',
+  path: '/roadmap',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const RiesgosRoute = RiesgosRouteImport.update({
   id: '/riesgos',
   path: '/riesgos',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReunionesRoute = ReunionesRouteImport.update({
+  id: '/reuniones',
+  path: '/reuniones',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReglasRoute = ReglasRouteImport.update({
+  id: '/reglas',
+  path: '/reglas',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RecordatoriosRoute = RecordatoriosRouteImport.update({
+  id: '/recordatorios',
+  path: '/recordatorios',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PresupuestoRoute = PresupuestoRouteImport.update({
@@ -27,9 +78,19 @@ const PresupuestoRoute = PresupuestoRouteImport.update({
   path: '/presupuesto',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PlantillasRoute = PlantillasRouteImport.update({
+  id: '/plantillas',
+  path: '/plantillas',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const OkrRoute = OkrRouteImport.update({
   id: '/okr',
   path: '/okr',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HabitosRoute = HabitosRouteImport.update({
+  id: '/habitos',
+  path: '/habitos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const GanttRoute = GanttRouteImport.update({
@@ -37,9 +98,44 @@ const GanttRoute = GanttRouteImport.update({
   path: '/gantt',
   getParentRoute: () => rootRouteImport,
 } as any)
+const EvaluacionRoute = EvaluacionRouteImport.update({
+  id: '/evaluacion',
+  path: '/evaluacion',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EstimadoVsRealRoute = EstimadoVsRealRouteImport.update({
+  id: '/estimado-vs-real',
+  path: '/estimado-vs-real',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EquipoRoute = EquipoRouteImport.update({
+  id: '/equipo',
+  path: '/equipo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EnfoqueRoute = EnfoqueRouteImport.update({
+  id: '/enfoque',
+  path: '/enfoque',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CargaRoute = CargaRouteImport.update({
+  id: '/carga',
+  path: '/carga',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const CalendarioRoute = CalendarioRouteImport.update({
   id: '/calendario',
   path: '/calendario',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AutoEstadosRoute = AutoEstadosRouteImport.update({
+  id: '/auto-estados',
+  path: '/auto-estados',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AlertasRoute = AlertasRouteImport.update({
+  id: '/alertas',
+  path: '/alertas',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ActividadesRoute = ActividadesRouteImport.update({
@@ -56,78 +152,239 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
+  '/alertas': typeof AlertasRoute
+  '/auto-estados': typeof AutoEstadosRoute
   '/calendario': typeof CalendarioRoute
+  '/carga': typeof CargaRoute
+  '/enfoque': typeof EnfoqueRoute
+  '/equipo': typeof EquipoRoute
+  '/estimado-vs-real': typeof EstimadoVsRealRoute
+  '/evaluacion': typeof EvaluacionRoute
   '/gantt': typeof GanttRoute
+  '/habitos': typeof HabitosRoute
   '/okr': typeof OkrRoute
+  '/plantillas': typeof PlantillasRoute
   '/presupuesto': typeof PresupuestoRoute
+  '/recordatorios': typeof RecordatoriosRoute
+  '/reglas': typeof ReglasRoute
+  '/reuniones': typeof ReunionesRoute
   '/riesgos': typeof RiesgosRoute
+  '/roadmap': typeof RoadmapRoute
+  '/sprints': typeof SprintsRoute
+  '/tiempo': typeof TiempoRoute
+  '/velocidad': typeof VelocidadRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
+  '/alertas': typeof AlertasRoute
+  '/auto-estados': typeof AutoEstadosRoute
   '/calendario': typeof CalendarioRoute
+  '/carga': typeof CargaRoute
+  '/enfoque': typeof EnfoqueRoute
+  '/equipo': typeof EquipoRoute
+  '/estimado-vs-real': typeof EstimadoVsRealRoute
+  '/evaluacion': typeof EvaluacionRoute
   '/gantt': typeof GanttRoute
+  '/habitos': typeof HabitosRoute
   '/okr': typeof OkrRoute
+  '/plantillas': typeof PlantillasRoute
   '/presupuesto': typeof PresupuestoRoute
+  '/recordatorios': typeof RecordatoriosRoute
+  '/reglas': typeof ReglasRoute
+  '/reuniones': typeof ReunionesRoute
   '/riesgos': typeof RiesgosRoute
+  '/roadmap': typeof RoadmapRoute
+  '/sprints': typeof SprintsRoute
+  '/tiempo': typeof TiempoRoute
+  '/velocidad': typeof VelocidadRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/actividades': typeof ActividadesRoute
+  '/alertas': typeof AlertasRoute
+  '/auto-estados': typeof AutoEstadosRoute
   '/calendario': typeof CalendarioRoute
+  '/carga': typeof CargaRoute
+  '/enfoque': typeof EnfoqueRoute
+  '/equipo': typeof EquipoRoute
+  '/estimado-vs-real': typeof EstimadoVsRealRoute
+  '/evaluacion': typeof EvaluacionRoute
   '/gantt': typeof GanttRoute
+  '/habitos': typeof HabitosRoute
   '/okr': typeof OkrRoute
+  '/plantillas': typeof PlantillasRoute
   '/presupuesto': typeof PresupuestoRoute
+  '/recordatorios': typeof RecordatoriosRoute
+  '/reglas': typeof ReglasRoute
+  '/reuniones': typeof ReunionesRoute
   '/riesgos': typeof RiesgosRoute
+  '/roadmap': typeof RoadmapRoute
+  '/sprints': typeof SprintsRoute
+  '/tiempo': typeof TiempoRoute
+  '/velocidad': typeof VelocidadRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/actividades'
+    | '/alertas'
+    | '/auto-estados'
     | '/calendario'
+    | '/carga'
+    | '/enfoque'
+    | '/equipo'
+    | '/estimado-vs-real'
+    | '/evaluacion'
     | '/gantt'
+    | '/habitos'
     | '/okr'
+    | '/plantillas'
     | '/presupuesto'
+    | '/recordatorios'
+    | '/reglas'
+    | '/reuniones'
     | '/riesgos'
+    | '/roadmap'
+    | '/sprints'
+    | '/tiempo'
+    | '/velocidad'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/actividades'
+    | '/alertas'
+    | '/auto-estados'
     | '/calendario'
+    | '/carga'
+    | '/enfoque'
+    | '/equipo'
+    | '/estimado-vs-real'
+    | '/evaluacion'
     | '/gantt'
+    | '/habitos'
     | '/okr'
+    | '/plantillas'
     | '/presupuesto'
+    | '/recordatorios'
+    | '/reglas'
+    | '/reuniones'
     | '/riesgos'
+    | '/roadmap'
+    | '/sprints'
+    | '/tiempo'
+    | '/velocidad'
   id:
     | '__root__'
     | '/'
     | '/actividades'
+    | '/alertas'
+    | '/auto-estados'
     | '/calendario'
+    | '/carga'
+    | '/enfoque'
+    | '/equipo'
+    | '/estimado-vs-real'
+    | '/evaluacion'
     | '/gantt'
+    | '/habitos'
     | '/okr'
+    | '/plantillas'
     | '/presupuesto'
+    | '/recordatorios'
+    | '/reglas'
+    | '/reuniones'
     | '/riesgos'
+    | '/roadmap'
+    | '/sprints'
+    | '/tiempo'
+    | '/velocidad'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ActividadesRoute: typeof ActividadesRoute
+  AlertasRoute: typeof AlertasRoute
+  AutoEstadosRoute: typeof AutoEstadosRoute
   CalendarioRoute: typeof CalendarioRoute
+  CargaRoute: typeof CargaRoute
+  EnfoqueRoute: typeof EnfoqueRoute
+  EquipoRoute: typeof EquipoRoute
+  EstimadoVsRealRoute: typeof EstimadoVsRealRoute
+  EvaluacionRoute: typeof EvaluacionRoute
   GanttRoute: typeof GanttRoute
+  HabitosRoute: typeof HabitosRoute
   OkrRoute: typeof OkrRoute
+  PlantillasRoute: typeof PlantillasRoute
   PresupuestoRoute: typeof PresupuestoRoute
+  RecordatoriosRoute: typeof RecordatoriosRoute
+  ReglasRoute: typeof ReglasRoute
+  ReunionesRoute: typeof ReunionesRoute
   RiesgosRoute: typeof RiesgosRoute
+  RoadmapRoute: typeof RoadmapRoute
+  SprintsRoute: typeof SprintsRoute
+  TiempoRoute: typeof TiempoRoute
+  VelocidadRoute: typeof VelocidadRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/velocidad': {
+      id: '/velocidad'
+      path: '/velocidad'
+      fullPath: '/velocidad'
+      preLoaderRoute: typeof VelocidadRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tiempo': {
+      id: '/tiempo'
+      path: '/tiempo'
+      fullPath: '/tiempo'
+      preLoaderRoute: typeof TiempoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sprints': {
+      id: '/sprints'
+      path: '/sprints'
+      fullPath: '/sprints'
+      preLoaderRoute: typeof SprintsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roadmap': {
+      id: '/roadmap'
+      path: '/roadmap'
+      fullPath: '/roadmap'
+      preLoaderRoute: typeof RoadmapRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/riesgos': {
       id: '/riesgos'
       path: '/riesgos'
       fullPath: '/riesgos'
       preLoaderRoute: typeof RiesgosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reuniones': {
+      id: '/reuniones'
+      path: '/reuniones'
+      fullPath: '/reuniones'
+      preLoaderRoute: typeof ReunionesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/reglas': {
+      id: '/reglas'
+      path: '/reglas'
+      fullPath: '/reglas'
+      preLoaderRoute: typeof ReglasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/recordatorios': {
+      id: '/recordatorios'
+      path: '/recordatorios'
+      fullPath: '/recordatorios'
+      preLoaderRoute: typeof RecordatoriosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/presupuesto': {
@@ -137,11 +394,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PresupuestoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/plantillas': {
+      id: '/plantillas'
+      path: '/plantillas'
+      fullPath: '/plantillas'
+      preLoaderRoute: typeof PlantillasRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/okr': {
       id: '/okr'
       path: '/okr'
       fullPath: '/okr'
       preLoaderRoute: typeof OkrRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/habitos': {
+      id: '/habitos'
+      path: '/habitos'
+      fullPath: '/habitos'
+      preLoaderRoute: typeof HabitosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/gantt': {
@@ -151,11 +422,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof GanttRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/evaluacion': {
+      id: '/evaluacion'
+      path: '/evaluacion'
+      fullPath: '/evaluacion'
+      preLoaderRoute: typeof EvaluacionRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/estimado-vs-real': {
+      id: '/estimado-vs-real'
+      path: '/estimado-vs-real'
+      fullPath: '/estimado-vs-real'
+      preLoaderRoute: typeof EstimadoVsRealRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/equipo': {
+      id: '/equipo'
+      path: '/equipo'
+      fullPath: '/equipo'
+      preLoaderRoute: typeof EquipoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/enfoque': {
+      id: '/enfoque'
+      path: '/enfoque'
+      fullPath: '/enfoque'
+      preLoaderRoute: typeof EnfoqueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/carga': {
+      id: '/carga'
+      path: '/carga'
+      fullPath: '/carga'
+      preLoaderRoute: typeof CargaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/calendario': {
       id: '/calendario'
       path: '/calendario'
       fullPath: '/calendario'
       preLoaderRoute: typeof CalendarioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auto-estados': {
+      id: '/auto-estados'
+      path: '/auto-estados'
+      fullPath: '/auto-estados'
+      preLoaderRoute: typeof AutoEstadosRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/alertas': {
+      id: '/alertas'
+      path: '/alertas'
+      fullPath: '/alertas'
+      preLoaderRoute: typeof AlertasRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/actividades': {
@@ -178,11 +498,27 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ActividadesRoute: ActividadesRoute,
+  AlertasRoute: AlertasRoute,
+  AutoEstadosRoute: AutoEstadosRoute,
   CalendarioRoute: CalendarioRoute,
+  CargaRoute: CargaRoute,
+  EnfoqueRoute: EnfoqueRoute,
+  EquipoRoute: EquipoRoute,
+  EstimadoVsRealRoute: EstimadoVsRealRoute,
+  EvaluacionRoute: EvaluacionRoute,
   GanttRoute: GanttRoute,
+  HabitosRoute: HabitosRoute,
   OkrRoute: OkrRoute,
+  PlantillasRoute: PlantillasRoute,
   PresupuestoRoute: PresupuestoRoute,
+  RecordatoriosRoute: RecordatoriosRoute,
+  ReglasRoute: ReglasRoute,
+  ReunionesRoute: ReunionesRoute,
   RiesgosRoute: RiesgosRoute,
+  RoadmapRoute: RoadmapRoute,
+  SprintsRoute: SprintsRoute,
+  TiempoRoute: TiempoRoute,
+  VelocidadRoute: VelocidadRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
