@@ -1,26 +1,52 @@
 import { Link, useRouterState } from "@tanstack/react-router";
-import { LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet, Target } from "lucide-react";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
+  LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet, Target,
+  Repeat, Timer, ClipboardCheck, Focus, Scale, TrendingUp, BellRing,
+  Users, Gauge, Mic, Map, Zap, FileStack, Bell, Settings2, Workflow,
+} from "lucide-react";
+import {
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const items = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Calendario", url: "/calendario", icon: Calendar },
-  { title: "Actividades", url: "/actividades", icon: ListTodo },
-  { title: "Gantt", url: "/gantt", icon: GanttChartSquare },
-  { title: "Riesgos", url: "/riesgos", icon: ShieldAlert },
-  { title: "Presupuesto", url: "/presupuesto", icon: Wallet },
-  { title: "OKR", url: "/okr", icon: Target },
-  { title: "Actividades", url: "/actividades", icon: ListTodo },
+const groups = [
+  { label: "General", items: [
+    { title: "Dashboard", url: "/", icon: LayoutDashboard },
+    { title: "Calendario", url: "/calendario", icon: Calendar },
+    { title: "Actividades", url: "/actividades", icon: ListTodo },
+  ]},
+  { label: "Gestión", items: [
+    { title: "Gantt", url: "/gantt", icon: GanttChartSquare },
+    { title: "Riesgos", url: "/riesgos", icon: ShieldAlert },
+    { title: "Presupuesto", url: "/presupuesto", icon: Wallet },
+    { title: "OKR", url: "/okr", icon: Target },
+  ]},
+  { label: "Productividad", items: [
+    { title: "Hábitos", url: "/habitos", icon: Repeat },
+    { title: "Tiempo", url: "/tiempo", icon: Timer },
+    { title: "Evaluación", url: "/evaluacion", icon: ClipboardCheck },
+    { title: "Enfoque", url: "/enfoque", icon: Focus },
+  ]},
+  { label: "Seguimiento", items: [
+    { title: "Estimado vs Real", url: "/estimado-vs-real", icon: Scale },
+    { title: "Velocidad", url: "/velocidad", icon: TrendingUp },
+    { title: "Alertas", url: "/alertas", icon: BellRing },
+  ]},
+  { label: "Colaboración", items: [
+    { title: "Equipo", url: "/equipo", icon: Users },
+    { title: "Carga", url: "/carga", icon: Gauge },
+    { title: "Reuniones", url: "/reuniones", icon: Mic },
+  ]},
+  { label: "Planificación", items: [
+    { title: "Roadmap", url: "/roadmap", icon: Map },
+    { title: "Sprints", url: "/sprints", icon: Zap },
+    { title: "Plantillas", url: "/plantillas", icon: FileStack },
+  ]},
+  { label: "Automatización", items: [
+    { title: "Recordatorios", url: "/recordatorios", icon: Bell },
+    { title: "Auto-estados", url: "/auto-estados", icon: Settings2 },
+    { title: "Reglas", url: "/reglas", icon: Workflow },
+  ]},
 ];
 
 export function AppSidebar() {
@@ -39,23 +65,25 @@ export function AppSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent>
-        <SidebarGroup>
-          <SidebarGroupLabel>Navegación</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={pathname === item.url}>
-                    <Link to={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groups.map((g) => (
+          <SidebarGroup key={g.label}>
+            <SidebarGroupLabel>{g.label}</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {g.items.map((item) => (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
+                      <Link to={item.url}>
+                        <item.icon />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
     </Sidebar>
   );
