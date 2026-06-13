@@ -3,6 +3,7 @@ import {
   Outlet,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -80,6 +81,16 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const focusMode = pathname.startsWith("/enfoque");
+  if (focusMode) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <div className="min-h-screen bg-background"><Outlet /></div>
+        <Toaster theme="dark" position="top-right" />
+      </QueryClientProvider>
+    );
+  }
   return (
     <QueryClientProvider client={queryClient}>
       <SidebarProvider>
