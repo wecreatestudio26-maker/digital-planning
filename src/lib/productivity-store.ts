@@ -71,13 +71,18 @@ interface State {
   toggleSprintTask: (sid: string, tid: string) => void;
   closeSprint: (sid: string, retro: Sprint["retro"]) => void;
   addTemplate: (t: Omit<Template, "id">) => void;
+  updateTemplate: (id: string, p: Partial<Omit<Template, "id">>) => void;
   removeTemplate: (id: string) => void;
   setReminders: (r: ReminderConfig) => void;
   setAutoStates: (a: AutoStateConfig) => void;
   addLog: (entity: string, message: string) => void;
   addRule: (r: Omit<Rule, "id">) => void;
+  updateRule: (id: string, p: Partial<Omit<Rule, "id">>) => void;
   toggleRule: (id: string) => void;
   removeRule: (id: string) => void;
+  addAutoRule: (r: Omit<AutoStateRule, "id">) => void;
+  updateAutoRule: (id: string, p: Partial<Omit<AutoStateRule, "id">>) => void;
+  removeAutoRule: (id: string) => void;
   setEstimate: (taskId: string, estimatedHours: number, actualHours: number) => void;
 }
 
