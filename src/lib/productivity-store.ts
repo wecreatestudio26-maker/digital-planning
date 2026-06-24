@@ -35,6 +35,7 @@ interface State {
   autoStates: AutoStateConfig;
   changeLog: ChangeLog[];
   rules: Rule[];
+  autoRules: AutoStateRule[];
   estimates: TaskEstimate[];
   // mutations
   toggleHabit: (id: string, date: string) => void;
