@@ -4,10 +4,14 @@ import {
   createRootRouteWithContext,
   useRouter,
   useRouterState,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { LogOut } from "lucide-react";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
