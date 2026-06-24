@@ -5,10 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, Pencil } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { riskLevel, useExtra, type Risk, type RiskStatus } from "@/lib/extra-store";
 
@@ -26,7 +26,7 @@ const STATUS_LABEL: Record<RiskStatus, string> = { abierto: "Abierto", mitigado:
 
 function RisksPage() {
   const { risks, addRisk, updateRisk, removeRisk } = useExtra();
-  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<{ mode: "create" | "edit"; risk?: Risk } | null>(null);
 
   const matrix: Risk[][][] = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => []));
   risks.forEach((r) => matrix[5 - r.impact][r.probability - 1].push(r));
@@ -44,10 +44,7 @@ function RisksPage() {
           <h2 className="text-2xl font-semibold tracking-tight">Matriz de Riesgos</h2>
           <p className="text-sm text-muted-foreground">Probabilidad × Impacto, nivel automático y mitigación.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> Nuevo riesgo</Button></DialogTrigger>
-          <RiskDialog onClose={() => setOpen(false)} onSave={(r) => { addRisk(r); setOpen(false); }} />
-        </Dialog>
+        <Button onClick={() => setEditing({ mode: "create" })}><Plus className="h-4 w-4" /> Nuevo riesgo</Button>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -74,14 +71,15 @@ function RisksPage() {
                           <span className="text-muted-foreground">{prob}×{impact}</span>
                           <div className="flex-1 flex flex-wrap gap-0.5 mt-1 content-start">
                             {cell.map((r) => (
-                              <span
+                              <button
                                 key={r.id}
-                                title={r.name}
+                                onClick={() => setEditing({ mode: "edit", risk: r })}
+                                title={`${r.name} (clic para editar)`}
                                 className="rounded px-1 py-0.5 text-[10px] font-medium truncate max-w-full"
                                 style={{ background: lvl.color, color: "#0f172a" }}
                               >
                                 {r.name}
-                              </span>
+                              </button>
                             ))}
                           </div>
                         </div>
@@ -155,7 +153,10 @@ function RisksPage() {
                       </Select>
                     </TableCell>
                     <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => removeRisk(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" onClick={() => setEditing({ mode: "edit", risk: r })}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" onClick={() => removeRisk(r.id)}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );
@@ -164,43 +165,59 @@ function RisksPage() {
           </Table>
         </CardContent>
       </Card>
+
+      {editing && (
+        <RiskDialog
+          risk={editing.risk}
+          onClose={() => setEditing(null)}
+          onSave={(r) => {
+            if (editing.mode === "edit" && editing.risk) updateRisk(editing.risk.id, r);
+            else addRisk(r);
+            setEditing(null);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function RiskDialog({ onSave, onClose }: { onSave: (r: Omit<Risk, "id">) => void; onClose: () => void }) {
-  const [form, setForm] = useState<Omit<Risk, "id">>({
-    name: "", category: "Operativo", probability: 3, impact: 3, mitigation: "", status: "abierto",
-  });
+function RiskDialog({ risk, onSave, onClose }: { risk?: Risk; onSave: (r: Omit<Risk, "id">) => void; onClose: () => void }) {
+  const [form, setForm] = useState<Omit<Risk, "id">>(
+    risk
+      ? { name: risk.name, category: risk.category, probability: risk.probability, impact: risk.impact, mitigation: risk.mitigation, status: risk.status }
+      : { name: "", category: "Operativo", probability: 3, impact: 3, mitigation: "", status: "abierto" }
+  );
   const lvl = riskLevel(form.probability, form.impact);
   return (
-    <DialogContent>
-      <DialogHeader><DialogTitle>Nuevo riesgo</DialogTitle></DialogHeader>
-      <div className="space-y-3">
-        <div><Label>Nombre</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><Label>Categoría</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
-          <div>
-            <Label>Estado</Label>
-            <Select value={form.status} onValueChange={(v: RiskStatus) => setForm({ ...form, status: v })}>
-              <SelectTrigger><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {(["abierto", "mitigado", "cerrado"] as RiskStatus[]).map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
-              </SelectContent>
-            </Select>
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{risk ? "Editar riesgo" : "Nuevo riesgo"}</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div><Label>Nombre</Label><Input value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Categoría</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
+            <div>
+              <Label>Estado</Label>
+              <Select value={form.status} onValueChange={(v: RiskStatus) => setForm({ ...form, status: v })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {(["abierto", "mitigado", "cerrado"] as RiskStatus[]).map((s) => <SelectItem key={s} value={s}>{STATUS_LABEL[s]}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Probabilidad (1-5)</Label><Input type="number" min={1} max={5} value={form.probability} onChange={(e) => setForm({ ...form, probability: Number(e.target.value) })} /></div>
+            <div><Label>Impacto (1-5)</Label><Input type="number" min={1} max={5} value={form.impact} onChange={(e) => setForm({ ...form, impact: Number(e.target.value) })} /></div>
+          </div>
+          <div className="text-sm">Nivel: <span className="font-medium" style={{ color: lvl.color }}>{lvl.label} ({lvl.score})</span></div>
+          <div><Label>Mitigación</Label><Textarea value={form.mitigation} onChange={(e) => setForm({ ...form, mitigation: e.target.value })} /></div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><Label>Probabilidad (1-5)</Label><Input type="number" min={1} max={5} value={form.probability} onChange={(e) => setForm({ ...form, probability: Number(e.target.value) })} /></div>
-          <div><Label>Impacto (1-5)</Label><Input type="number" min={1} max={5} value={form.impact} onChange={(e) => setForm({ ...form, impact: Number(e.target.value) })} /></div>
-        </div>
-        <div className="text-sm">Nivel: <span className="font-medium" style={{ color: lvl.color }}>{lvl.label} ({lvl.score})</span></div>
-        <div><Label>Mitigación</Label><Textarea value={form.mitigation} onChange={(e) => setForm({ ...form, mitigation: e.target.value })} /></div>
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button onClick={() => form.name && onSave(form)}>Guardar</Button>
-      </DialogFooter>
-    </DialogContent>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={() => form.name && onSave(form)}>{risk ? "Guardar cambios" : "Crear"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
