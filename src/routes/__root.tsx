@@ -4,10 +4,14 @@ import {
   createRootRouteWithContext,
   useRouter,
   useRouterState,
+  useNavigate,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
+import { LogOut } from "lucide-react";
+import { AuthProvider, useAuth } from "@/hooks/useAuth";
+import { Button } from "@/components/ui/button";
 
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
@@ -81,33 +85,76 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
-  const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const focusMode = pathname.startsWith("/enfoque");
-  if (focusMode) {
-    return (
-      <QueryClientProvider client={queryClient}>
-        <div className="min-h-screen bg-background"><Outlet /></div>
-        <Toaster theme="dark" position="top-right" />
-      </QueryClientProvider>
-    );
-  }
   return (
     <QueryClientProvider client={queryClient}>
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full bg-background">
-          <AppSidebar />
-          <div className="flex-1 flex flex-col min-w-0">
-            <header className="h-14 flex items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur z-10">
-              <SidebarTrigger />
-              <h1 className="text-sm font-medium text-muted-foreground">Planeador de Actividades</h1>
-            </header>
-            <main className="flex-1 p-4 md:p-6">
-              <Outlet />
-            </main>
-          </div>
-        </div>
-        <Toaster theme="dark" position="top-right" />
-      </SidebarProvider>
+      <AuthProvider>
+        <RootLayout />
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
+
+function RootLayout() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const focusMode = pathname.startsWith("/enfoque");
+  const isAuthRoute = pathname.startsWith("/auth");
+
+  if (isAuthRoute) {
+    return (
+      <>
+        <Outlet />
+        <Toaster theme="dark" position="top-right" />
+      </>
+    );
+  }
+
+  if (focusMode) {
+    return (
+      <>
+        <div className="min-h-screen bg-background"><Outlet /></div>
+        <Toaster theme="dark" position="top-right" />
+      </>
+    );
+  }
+
+  return (
+    <SidebarProvider>
+      <div className="min-h-screen flex w-full bg-background">
+        <AppSidebar />
+        <div className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 flex items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur z-10">
+            <SidebarTrigger />
+            <h1 className="text-sm font-medium text-muted-foreground">Planeador de Actividades</h1>
+            <div className="ml-auto">
+              <SignOutButton />
+            </div>
+          </header>
+          <main className="flex-1 p-4 md:p-6">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+      <Toaster theme="dark" position="top-right" />
+    </SidebarProvider>
+  );
+}
+
+function SignOutButton() {
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  if (!user) return null;
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={async () => {
+        await signOut();
+        navigate({ to: "/auth/login", replace: true });
+      }}
+    >
+      <LogOut className="h-4 w-4 mr-2" />
+      <span className="hidden sm:inline">Salir</span>
+    </Button>
+  );
+}
+

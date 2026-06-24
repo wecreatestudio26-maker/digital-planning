@@ -13,7 +13,7 @@ import { useActivities } from "@/lib/activities-store";
 import { cn } from "@/lib/utils";
 import type { Activity, Status } from "@/lib/types";
 
-export const Route = createFileRoute("/calendario")({
+export const Route = createFileRoute("/_authenticated/calendario")({
   head: () => ({
     meta: [
       { title: "Calendario — Planeador de Actividades" },

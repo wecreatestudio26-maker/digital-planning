@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useProductivity } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
 
-export const Route = createFileRoute("/reuniones")({
+export const Route = createFileRoute("/_authenticated/reuniones")({
   head: () => ({ meta: [{ title: "Reuniones — Planeador" }, { name: "description", content: "Agenda, actas y acuerdos." }] }),
   component: MeetingsPage,
 });

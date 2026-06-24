@@ -10,7 +10,7 @@ import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Tool
 import { useProductivity, weekStartStr } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
 
-export const Route = createFileRoute("/evaluacion")({
+export const Route = createFileRoute("/_authenticated/evaluacion")({
   head: () => ({ meta: [{ title: "Evaluación Semanal — Planeador" }, { name: "description", content: "Review semanal automática con score y tendencia." }] }),
   component: EvalPage,
 });

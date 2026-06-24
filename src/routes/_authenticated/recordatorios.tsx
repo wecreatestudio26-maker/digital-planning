@@ -8,7 +8,7 @@ import { Bell } from "lucide-react";
 import { useProductivity } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
 
-export const Route = createFileRoute("/recordatorios")({
+export const Route = createFileRoute("/_authenticated/recordatorios")({
   head: () => ({ meta: [{ title: "Recordatorios — Planeador" }, { name: "description", content: "Configuración de recordatorios internos." }] }),
   component: RemindersPage,
 });

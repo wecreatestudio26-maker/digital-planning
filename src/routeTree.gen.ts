@@ -9,167 +9,222 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as TiempoRouteImport } from './routes/tiempo'
-import { Route as RiesgosRouteImport } from './routes/riesgos'
-import { Route as ReunionesRouteImport } from './routes/reuniones'
-import { Route as ReglasRouteImport } from './routes/reglas'
-import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
-import { Route as PresupuestoRouteImport } from './routes/presupuesto'
-import { Route as PlantillasRouteImport } from './routes/plantillas'
-import { Route as HabitosRouteImport } from './routes/habitos'
-import { Route as GanttRouteImport } from './routes/gantt'
-import { Route as EvaluacionRouteImport } from './routes/evaluacion'
-import { Route as EquipoRouteImport } from './routes/equipo'
-import { Route as EnfoqueRouteImport } from './routes/enfoque'
-import { Route as CargaRouteImport } from './routes/carga'
-import { Route as CalendarioRouteImport } from './routes/calendario'
-import { Route as AutoEstadosRouteImport } from './routes/auto-estados'
-import { Route as ActividadesRouteImport } from './routes/actividades'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
+import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
+import { Route as AuthRegisterRouteImport } from './routes/auth/register'
+import { Route as AuthLoginRouteImport } from './routes/auth/login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth/forgot-password'
+import { Route as AuthCheckEmailRouteImport } from './routes/auth/check-email'
+import { Route as AuthenticatedTiempoRouteImport } from './routes/_authenticated/tiempo'
+import { Route as AuthenticatedRiesgosRouteImport } from './routes/_authenticated/riesgos'
+import { Route as AuthenticatedReunionesRouteImport } from './routes/_authenticated/reuniones'
+import { Route as AuthenticatedReglasRouteImport } from './routes/_authenticated/reglas'
+import { Route as AuthenticatedRecordatoriosRouteImport } from './routes/_authenticated/recordatorios'
+import { Route as AuthenticatedPresupuestoRouteImport } from './routes/_authenticated/presupuesto'
+import { Route as AuthenticatedPlantillasRouteImport } from './routes/_authenticated/plantillas'
+import { Route as AuthenticatedHabitosRouteImport } from './routes/_authenticated/habitos'
+import { Route as AuthenticatedGanttRouteImport } from './routes/_authenticated/gantt'
+import { Route as AuthenticatedEvaluacionRouteImport } from './routes/_authenticated/evaluacion'
+import { Route as AuthenticatedEquipoRouteImport } from './routes/_authenticated/equipo'
+import { Route as AuthenticatedEnfoqueRouteImport } from './routes/_authenticated/enfoque'
+import { Route as AuthenticatedCargaRouteImport } from './routes/_authenticated/carga'
+import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
+import { Route as AuthenticatedAutoEstadosRouteImport } from './routes/_authenticated/auto-estados'
+import { Route as AuthenticatedActividadesRouteImport } from './routes/_authenticated/actividades'
 
-const TiempoRoute = TiempoRouteImport.update({
-  id: '/tiempo',
-  path: '/tiempo',
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RiesgosRoute = RiesgosRouteImport.update({
-  id: '/riesgos',
-  path: '/riesgos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReunionesRoute = ReunionesRouteImport.update({
-  id: '/reuniones',
-  path: '/reuniones',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ReglasRoute = ReglasRouteImport.update({
-  id: '/reglas',
-  path: '/reglas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RecordatoriosRoute = RecordatoriosRouteImport.update({
-  id: '/recordatorios',
-  path: '/recordatorios',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PresupuestoRoute = PresupuestoRouteImport.update({
-  id: '/presupuesto',
-  path: '/presupuesto',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PlantillasRoute = PlantillasRouteImport.update({
-  id: '/plantillas',
-  path: '/plantillas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const HabitosRoute = HabitosRouteImport.update({
-  id: '/habitos',
-  path: '/habitos',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const GanttRoute = GanttRouteImport.update({
-  id: '/gantt',
-  path: '/gantt',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EvaluacionRoute = EvaluacionRouteImport.update({
-  id: '/evaluacion',
-  path: '/evaluacion',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EquipoRoute = EquipoRouteImport.update({
-  id: '/equipo',
-  path: '/equipo',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const EnfoqueRoute = EnfoqueRouteImport.update({
-  id: '/enfoque',
-  path: '/enfoque',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CargaRoute = CargaRouteImport.update({
-  id: '/carga',
-  path: '/carga',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CalendarioRoute = CalendarioRouteImport.update({
-  id: '/calendario',
-  path: '/calendario',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AutoEstadosRoute = AutoEstadosRouteImport.update({
-  id: '/auto-estados',
-  path: '/auto-estados',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ActividadesRoute = ActividadesRouteImport.update({
-  id: '/actividades',
-  path: '/actividades',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const IndexRoute = IndexRouteImport.update({
+const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
+  id: '/auth/reset-password',
+  path: '/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthCheckEmailRoute = AuthCheckEmailRouteImport.update({
+  id: '/auth/check-email',
+  path: '/auth/check-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTiempoRoute = AuthenticatedTiempoRouteImport.update({
+  id: '/tiempo',
+  path: '/tiempo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRiesgosRoute = AuthenticatedRiesgosRouteImport.update({
+  id: '/riesgos',
+  path: '/riesgos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReunionesRoute = AuthenticatedReunionesRouteImport.update({
+  id: '/reuniones',
+  path: '/reuniones',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedReglasRoute = AuthenticatedReglasRouteImport.update({
+  id: '/reglas',
+  path: '/reglas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedRecordatoriosRoute =
+  AuthenticatedRecordatoriosRouteImport.update({
+    id: '/recordatorios',
+    path: '/recordatorios',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPresupuestoRoute =
+  AuthenticatedPresupuestoRouteImport.update({
+    id: '/presupuesto',
+    path: '/presupuesto',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedPlantillasRoute = AuthenticatedPlantillasRouteImport.update({
+  id: '/plantillas',
+  path: '/plantillas',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedHabitosRoute = AuthenticatedHabitosRouteImport.update({
+  id: '/habitos',
+  path: '/habitos',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGanttRoute = AuthenticatedGanttRouteImport.update({
+  id: '/gantt',
+  path: '/gantt',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEvaluacionRoute = AuthenticatedEvaluacionRouteImport.update({
+  id: '/evaluacion',
+  path: '/evaluacion',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEquipoRoute = AuthenticatedEquipoRouteImport.update({
+  id: '/equipo',
+  path: '/equipo',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedEnfoqueRoute = AuthenticatedEnfoqueRouteImport.update({
+  id: '/enfoque',
+  path: '/enfoque',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCargaRoute = AuthenticatedCargaRouteImport.update({
+  id: '/carga',
+  path: '/carga',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedCalendarioRoute = AuthenticatedCalendarioRouteImport.update({
+  id: '/calendario',
+  path: '/calendario',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedAutoEstadosRoute =
+  AuthenticatedAutoEstadosRouteImport.update({
+    id: '/auto-estados',
+    path: '/auto-estados',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedActividadesRoute =
+  AuthenticatedActividadesRouteImport.update({
+    id: '/actividades',
+    path: '/actividades',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
-  '/actividades': typeof ActividadesRoute
-  '/auto-estados': typeof AutoEstadosRoute
-  '/calendario': typeof CalendarioRoute
-  '/carga': typeof CargaRoute
-  '/enfoque': typeof EnfoqueRoute
-  '/equipo': typeof EquipoRoute
-  '/evaluacion': typeof EvaluacionRoute
-  '/gantt': typeof GanttRoute
-  '/habitos': typeof HabitosRoute
-  '/plantillas': typeof PlantillasRoute
-  '/presupuesto': typeof PresupuestoRoute
-  '/recordatorios': typeof RecordatoriosRoute
-  '/reglas': typeof ReglasRoute
-  '/reuniones': typeof ReunionesRoute
-  '/riesgos': typeof RiesgosRoute
-  '/tiempo': typeof TiempoRoute
+  '/': typeof AuthenticatedIndexRoute
+  '/actividades': typeof AuthenticatedActividadesRoute
+  '/auto-estados': typeof AuthenticatedAutoEstadosRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
+  '/carga': typeof AuthenticatedCargaRoute
+  '/enfoque': typeof AuthenticatedEnfoqueRoute
+  '/equipo': typeof AuthenticatedEquipoRoute
+  '/evaluacion': typeof AuthenticatedEvaluacionRoute
+  '/gantt': typeof AuthenticatedGanttRoute
+  '/habitos': typeof AuthenticatedHabitosRoute
+  '/plantillas': typeof AuthenticatedPlantillasRoute
+  '/presupuesto': typeof AuthenticatedPresupuestoRoute
+  '/recordatorios': typeof AuthenticatedRecordatoriosRoute
+  '/reglas': typeof AuthenticatedReglasRoute
+  '/reuniones': typeof AuthenticatedReunionesRoute
+  '/riesgos': typeof AuthenticatedRiesgosRoute
+  '/tiempo': typeof AuthenticatedTiempoRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
-  '/actividades': typeof ActividadesRoute
-  '/auto-estados': typeof AutoEstadosRoute
-  '/calendario': typeof CalendarioRoute
-  '/carga': typeof CargaRoute
-  '/enfoque': typeof EnfoqueRoute
-  '/equipo': typeof EquipoRoute
-  '/evaluacion': typeof EvaluacionRoute
-  '/gantt': typeof GanttRoute
-  '/habitos': typeof HabitosRoute
-  '/plantillas': typeof PlantillasRoute
-  '/presupuesto': typeof PresupuestoRoute
-  '/recordatorios': typeof RecordatoriosRoute
-  '/reglas': typeof ReglasRoute
-  '/reuniones': typeof ReunionesRoute
-  '/riesgos': typeof RiesgosRoute
-  '/tiempo': typeof TiempoRoute
+  '/actividades': typeof AuthenticatedActividadesRoute
+  '/auto-estados': typeof AuthenticatedAutoEstadosRoute
+  '/calendario': typeof AuthenticatedCalendarioRoute
+  '/carga': typeof AuthenticatedCargaRoute
+  '/enfoque': typeof AuthenticatedEnfoqueRoute
+  '/equipo': typeof AuthenticatedEquipoRoute
+  '/evaluacion': typeof AuthenticatedEvaluacionRoute
+  '/gantt': typeof AuthenticatedGanttRoute
+  '/habitos': typeof AuthenticatedHabitosRoute
+  '/plantillas': typeof AuthenticatedPlantillasRoute
+  '/presupuesto': typeof AuthenticatedPresupuestoRoute
+  '/recordatorios': typeof AuthenticatedRecordatoriosRoute
+  '/reglas': typeof AuthenticatedReglasRoute
+  '/reuniones': typeof AuthenticatedReunionesRoute
+  '/riesgos': typeof AuthenticatedRiesgosRoute
+  '/tiempo': typeof AuthenticatedTiempoRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
-  '/actividades': typeof ActividadesRoute
-  '/auto-estados': typeof AutoEstadosRoute
-  '/calendario': typeof CalendarioRoute
-  '/carga': typeof CargaRoute
-  '/enfoque': typeof EnfoqueRoute
-  '/equipo': typeof EquipoRoute
-  '/evaluacion': typeof EvaluacionRoute
-  '/gantt': typeof GanttRoute
-  '/habitos': typeof HabitosRoute
-  '/plantillas': typeof PlantillasRoute
-  '/presupuesto': typeof PresupuestoRoute
-  '/recordatorios': typeof RecordatoriosRoute
-  '/reglas': typeof ReglasRoute
-  '/reuniones': typeof ReunionesRoute
-  '/riesgos': typeof RiesgosRoute
-  '/tiempo': typeof TiempoRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/_authenticated/actividades': typeof AuthenticatedActividadesRoute
+  '/_authenticated/auto-estados': typeof AuthenticatedAutoEstadosRoute
+  '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
+  '/_authenticated/carga': typeof AuthenticatedCargaRoute
+  '/_authenticated/enfoque': typeof AuthenticatedEnfoqueRoute
+  '/_authenticated/equipo': typeof AuthenticatedEquipoRoute
+  '/_authenticated/evaluacion': typeof AuthenticatedEvaluacionRoute
+  '/_authenticated/gantt': typeof AuthenticatedGanttRoute
+  '/_authenticated/habitos': typeof AuthenticatedHabitosRoute
+  '/_authenticated/plantillas': typeof AuthenticatedPlantillasRoute
+  '/_authenticated/presupuesto': typeof AuthenticatedPresupuestoRoute
+  '/_authenticated/recordatorios': typeof AuthenticatedRecordatoriosRoute
+  '/_authenticated/reglas': typeof AuthenticatedReglasRoute
+  '/_authenticated/reuniones': typeof AuthenticatedReunionesRoute
+  '/_authenticated/riesgos': typeof AuthenticatedRiesgosRoute
+  '/_authenticated/tiempo': typeof AuthenticatedTiempoRoute
+  '/auth/check-email': typeof AuthCheckEmailRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/auth/reset-password': typeof AuthResetPasswordRoute
+  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -191,9 +246,13 @@ export interface FileRouteTypes {
     | '/reuniones'
     | '/riesgos'
     | '/tiempo'
+    | '/auth/check-email'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/auth/reset-password'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
     | '/actividades'
     | '/auto-estados'
     | '/calendario'
@@ -210,189 +269,264 @@ export interface FileRouteTypes {
     | '/reuniones'
     | '/riesgos'
     | '/tiempo'
+    | '/auth/check-email'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/auth/reset-password'
+    | '/'
   id:
     | '__root__'
-    | '/'
-    | '/actividades'
-    | '/auto-estados'
-    | '/calendario'
-    | '/carga'
-    | '/enfoque'
-    | '/equipo'
-    | '/evaluacion'
-    | '/gantt'
-    | '/habitos'
-    | '/plantillas'
-    | '/presupuesto'
-    | '/recordatorios'
-    | '/reglas'
-    | '/reuniones'
-    | '/riesgos'
-    | '/tiempo'
+    | '/_authenticated'
+    | '/_authenticated/actividades'
+    | '/_authenticated/auto-estados'
+    | '/_authenticated/calendario'
+    | '/_authenticated/carga'
+    | '/_authenticated/enfoque'
+    | '/_authenticated/equipo'
+    | '/_authenticated/evaluacion'
+    | '/_authenticated/gantt'
+    | '/_authenticated/habitos'
+    | '/_authenticated/plantillas'
+    | '/_authenticated/presupuesto'
+    | '/_authenticated/recordatorios'
+    | '/_authenticated/reglas'
+    | '/_authenticated/reuniones'
+    | '/_authenticated/riesgos'
+    | '/_authenticated/tiempo'
+    | '/auth/check-email'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/auth/reset-password'
+    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
-  ActividadesRoute: typeof ActividadesRoute
-  AutoEstadosRoute: typeof AutoEstadosRoute
-  CalendarioRoute: typeof CalendarioRoute
-  CargaRoute: typeof CargaRoute
-  EnfoqueRoute: typeof EnfoqueRoute
-  EquipoRoute: typeof EquipoRoute
-  EvaluacionRoute: typeof EvaluacionRoute
-  GanttRoute: typeof GanttRoute
-  HabitosRoute: typeof HabitosRoute
-  PlantillasRoute: typeof PlantillasRoute
-  PresupuestoRoute: typeof PresupuestoRoute
-  RecordatoriosRoute: typeof RecordatoriosRoute
-  ReglasRoute: typeof ReglasRoute
-  ReunionesRoute: typeof ReunionesRoute
-  RiesgosRoute: typeof RiesgosRoute
-  TiempoRoute: typeof TiempoRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  AuthCheckEmailRoute: typeof AuthCheckEmailRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+  AuthResetPasswordRoute: typeof AuthResetPasswordRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/tiempo': {
-      id: '/tiempo'
-      path: '/tiempo'
-      fullPath: '/tiempo'
-      preLoaderRoute: typeof TiempoRouteImport
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/riesgos': {
-      id: '/riesgos'
-      path: '/riesgos'
-      fullPath: '/riesgos'
-      preLoaderRoute: typeof RiesgosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reuniones': {
-      id: '/reuniones'
-      path: '/reuniones'
-      fullPath: '/reuniones'
-      preLoaderRoute: typeof ReunionesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/reglas': {
-      id: '/reglas'
-      path: '/reglas'
-      fullPath: '/reglas'
-      preLoaderRoute: typeof ReglasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/recordatorios': {
-      id: '/recordatorios'
-      path: '/recordatorios'
-      fullPath: '/recordatorios'
-      preLoaderRoute: typeof RecordatoriosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/presupuesto': {
-      id: '/presupuesto'
-      path: '/presupuesto'
-      fullPath: '/presupuesto'
-      preLoaderRoute: typeof PresupuestoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/plantillas': {
-      id: '/plantillas'
-      path: '/plantillas'
-      fullPath: '/plantillas'
-      preLoaderRoute: typeof PlantillasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/habitos': {
-      id: '/habitos'
-      path: '/habitos'
-      fullPath: '/habitos'
-      preLoaderRoute: typeof HabitosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/gantt': {
-      id: '/gantt'
-      path: '/gantt'
-      fullPath: '/gantt'
-      preLoaderRoute: typeof GanttRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/evaluacion': {
-      id: '/evaluacion'
-      path: '/evaluacion'
-      fullPath: '/evaluacion'
-      preLoaderRoute: typeof EvaluacionRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/equipo': {
-      id: '/equipo'
-      path: '/equipo'
-      fullPath: '/equipo'
-      preLoaderRoute: typeof EquipoRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/enfoque': {
-      id: '/enfoque'
-      path: '/enfoque'
-      fullPath: '/enfoque'
-      preLoaderRoute: typeof EnfoqueRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/carga': {
-      id: '/carga'
-      path: '/carga'
-      fullPath: '/carga'
-      preLoaderRoute: typeof CargaRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/calendario': {
-      id: '/calendario'
-      path: '/calendario'
-      fullPath: '/calendario'
-      preLoaderRoute: typeof CalendarioRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auto-estados': {
-      id: '/auto-estados'
-      path: '/auto-estados'
-      fullPath: '/auto-estados'
-      preLoaderRoute: typeof AutoEstadosRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/actividades': {
-      id: '/actividades'
-      path: '/actividades'
-      fullPath: '/actividades'
-      preLoaderRoute: typeof ActividadesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/': {
-      id: '/'
+    '/_authenticated/': {
+      id: '/_authenticated/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof AuthenticatedIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/auth/reset-password': {
+      id: '/auth/reset-password'
+      path: '/auth/reset-password'
+      fullPath: '/auth/reset-password'
+      preLoaderRoute: typeof AuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/check-email': {
+      id: '/auth/check-email'
+      path: '/auth/check-email'
+      fullPath: '/auth/check-email'
+      preLoaderRoute: typeof AuthCheckEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tiempo': {
+      id: '/_authenticated/tiempo'
+      path: '/tiempo'
+      fullPath: '/tiempo'
+      preLoaderRoute: typeof AuthenticatedTiempoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/riesgos': {
+      id: '/_authenticated/riesgos'
+      path: '/riesgos'
+      fullPath: '/riesgos'
+      preLoaderRoute: typeof AuthenticatedRiesgosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reuniones': {
+      id: '/_authenticated/reuniones'
+      path: '/reuniones'
+      fullPath: '/reuniones'
+      preLoaderRoute: typeof AuthenticatedReunionesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/reglas': {
+      id: '/_authenticated/reglas'
+      path: '/reglas'
+      fullPath: '/reglas'
+      preLoaderRoute: typeof AuthenticatedReglasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/recordatorios': {
+      id: '/_authenticated/recordatorios'
+      path: '/recordatorios'
+      fullPath: '/recordatorios'
+      preLoaderRoute: typeof AuthenticatedRecordatoriosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/presupuesto': {
+      id: '/_authenticated/presupuesto'
+      path: '/presupuesto'
+      fullPath: '/presupuesto'
+      preLoaderRoute: typeof AuthenticatedPresupuestoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/plantillas': {
+      id: '/_authenticated/plantillas'
+      path: '/plantillas'
+      fullPath: '/plantillas'
+      preLoaderRoute: typeof AuthenticatedPlantillasRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/habitos': {
+      id: '/_authenticated/habitos'
+      path: '/habitos'
+      fullPath: '/habitos'
+      preLoaderRoute: typeof AuthenticatedHabitosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/gantt': {
+      id: '/_authenticated/gantt'
+      path: '/gantt'
+      fullPath: '/gantt'
+      preLoaderRoute: typeof AuthenticatedGanttRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/evaluacion': {
+      id: '/_authenticated/evaluacion'
+      path: '/evaluacion'
+      fullPath: '/evaluacion'
+      preLoaderRoute: typeof AuthenticatedEvaluacionRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/equipo': {
+      id: '/_authenticated/equipo'
+      path: '/equipo'
+      fullPath: '/equipo'
+      preLoaderRoute: typeof AuthenticatedEquipoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/enfoque': {
+      id: '/_authenticated/enfoque'
+      path: '/enfoque'
+      fullPath: '/enfoque'
+      preLoaderRoute: typeof AuthenticatedEnfoqueRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/carga': {
+      id: '/_authenticated/carga'
+      path: '/carga'
+      fullPath: '/carga'
+      preLoaderRoute: typeof AuthenticatedCargaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/calendario': {
+      id: '/_authenticated/calendario'
+      path: '/calendario'
+      fullPath: '/calendario'
+      preLoaderRoute: typeof AuthenticatedCalendarioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/auto-estados': {
+      id: '/_authenticated/auto-estados'
+      path: '/auto-estados'
+      fullPath: '/auto-estados'
+      preLoaderRoute: typeof AuthenticatedAutoEstadosRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/actividades': {
+      id: '/_authenticated/actividades'
+      path: '/actividades'
+      fullPath: '/actividades'
+      preLoaderRoute: typeof AuthenticatedActividadesRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
     }
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedActividadesRoute: typeof AuthenticatedActividadesRoute
+  AuthenticatedAutoEstadosRoute: typeof AuthenticatedAutoEstadosRoute
+  AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
+  AuthenticatedCargaRoute: typeof AuthenticatedCargaRoute
+  AuthenticatedEnfoqueRoute: typeof AuthenticatedEnfoqueRoute
+  AuthenticatedEquipoRoute: typeof AuthenticatedEquipoRoute
+  AuthenticatedEvaluacionRoute: typeof AuthenticatedEvaluacionRoute
+  AuthenticatedGanttRoute: typeof AuthenticatedGanttRoute
+  AuthenticatedHabitosRoute: typeof AuthenticatedHabitosRoute
+  AuthenticatedPlantillasRoute: typeof AuthenticatedPlantillasRoute
+  AuthenticatedPresupuestoRoute: typeof AuthenticatedPresupuestoRoute
+  AuthenticatedRecordatoriosRoute: typeof AuthenticatedRecordatoriosRoute
+  AuthenticatedReglasRoute: typeof AuthenticatedReglasRoute
+  AuthenticatedReunionesRoute: typeof AuthenticatedReunionesRoute
+  AuthenticatedRiesgosRoute: typeof AuthenticatedRiesgosRoute
+  AuthenticatedTiempoRoute: typeof AuthenticatedTiempoRoute
+  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedActividadesRoute: AuthenticatedActividadesRoute,
+  AuthenticatedAutoEstadosRoute: AuthenticatedAutoEstadosRoute,
+  AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
+  AuthenticatedCargaRoute: AuthenticatedCargaRoute,
+  AuthenticatedEnfoqueRoute: AuthenticatedEnfoqueRoute,
+  AuthenticatedEquipoRoute: AuthenticatedEquipoRoute,
+  AuthenticatedEvaluacionRoute: AuthenticatedEvaluacionRoute,
+  AuthenticatedGanttRoute: AuthenticatedGanttRoute,
+  AuthenticatedHabitosRoute: AuthenticatedHabitosRoute,
+  AuthenticatedPlantillasRoute: AuthenticatedPlantillasRoute,
+  AuthenticatedPresupuestoRoute: AuthenticatedPresupuestoRoute,
+  AuthenticatedRecordatoriosRoute: AuthenticatedRecordatoriosRoute,
+  AuthenticatedReglasRoute: AuthenticatedReglasRoute,
+  AuthenticatedReunionesRoute: AuthenticatedReunionesRoute,
+  AuthenticatedRiesgosRoute: AuthenticatedRiesgosRoute,
+  AuthenticatedTiempoRoute: AuthenticatedTiempoRoute,
+  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
-  ActividadesRoute: ActividadesRoute,
-  AutoEstadosRoute: AutoEstadosRoute,
-  CalendarioRoute: CalendarioRoute,
-  CargaRoute: CargaRoute,
-  EnfoqueRoute: EnfoqueRoute,
-  EquipoRoute: EquipoRoute,
-  EvaluacionRoute: EvaluacionRoute,
-  GanttRoute: GanttRoute,
-  HabitosRoute: HabitosRoute,
-  PlantillasRoute: PlantillasRoute,
-  PresupuestoRoute: PresupuestoRoute,
-  RecordatoriosRoute: RecordatoriosRoute,
-  ReglasRoute: ReglasRoute,
-  ReunionesRoute: ReunionesRoute,
-  RiesgosRoute: RiesgosRoute,
-  TiempoRoute: TiempoRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  AuthCheckEmailRoute: AuthCheckEmailRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+  AuthResetPasswordRoute: AuthResetPasswordRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

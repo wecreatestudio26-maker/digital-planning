@@ -10,7 +10,7 @@ import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGri
 import { useExtra, budgetActual, type BudgetItem, type BudgetSubItem } from "@/lib/extra-store";
 import { format, parseISO } from "date-fns";
 
-export const Route = createFileRoute("/presupuesto")({
+export const Route = createFileRoute("/_authenticated/presupuesto")({
   head: () => ({
     meta: [
       { title: "Presupuesto — Planeador" },
