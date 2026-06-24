@@ -250,12 +250,24 @@ export const useProductivity = create<State>()(
       updateMeeting: (id, p) => set((s) => ({ meetings: s.meetings.map((m) => m.id === id ? { ...m, ...p } : m) })),
       removeMeeting: (id) => set((s) => ({ meetings: s.meetings.filter((m) => m.id !== id) })),
       addAgreement: (mid, text) => set((s) => ({
-        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: [...m.agreements, { id: crypto.randomUUID(), text }] } : m),
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: [...m.agreements, { id: crypto.randomUUID(), text, done: false }] } : m),
+      })),
+      toggleAgreementDone: (mid, aid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: m.agreements.map((a) => a.id === aid ? { ...a, done: !a.done } : a) } : m),
+      })),
+      removeAgreement: (mid, aid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: m.agreements.filter((a) => a.id !== aid) } : m),
       })),
       convertAgreement: (mid, aid, taskId) => set((s) => ({
         meetings: s.meetings.map((m) => m.id === mid ? {
-          ...m, agreements: m.agreements.map((a) => a.id === aid ? { ...a, convertedTaskId: taskId } : a),
+          ...m, agreements: m.agreements.map((a) => a.id === aid ? { ...a, convertedTaskId: taskId, done: true } : a),
         } : m),
+      })),
+      completeMeeting: (mid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, completed: true, archivedAt: new Date().toISOString() } : m),
+      })),
+      reopenMeeting: (mid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, completed: false, archivedAt: undefined } : m),
       })),
 
       addRoadmap: (r) => set((s) => ({ roadmap: [...s.roadmap, { ...r, id: crypto.randomUUID() }] })),
