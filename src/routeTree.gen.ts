@@ -19,7 +19,6 @@ import { Route as ReglasRouteImport } from './routes/reglas'
 import { Route as RecordatoriosRouteImport } from './routes/recordatorios'
 import { Route as PresupuestoRouteImport } from './routes/presupuesto'
 import { Route as PlantillasRouteImport } from './routes/plantillas'
-import { Route as OkrRouteImport } from './routes/okr'
 import { Route as HabitosRouteImport } from './routes/habitos'
 import { Route as GanttRouteImport } from './routes/gantt'
 import { Route as EvaluacionRouteImport } from './routes/evaluacion'
@@ -81,11 +80,6 @@ const PresupuestoRoute = PresupuestoRouteImport.update({
 const PlantillasRoute = PlantillasRouteImport.update({
   id: '/plantillas',
   path: '/plantillas',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OkrRoute = OkrRouteImport.update({
-  id: '/okr',
-  path: '/okr',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HabitosRoute = HabitosRouteImport.update({
@@ -162,7 +156,6 @@ export interface FileRoutesByFullPath {
   '/evaluacion': typeof EvaluacionRoute
   '/gantt': typeof GanttRoute
   '/habitos': typeof HabitosRoute
-  '/okr': typeof OkrRoute
   '/plantillas': typeof PlantillasRoute
   '/presupuesto': typeof PresupuestoRoute
   '/recordatorios': typeof RecordatoriosRoute
@@ -187,7 +180,6 @@ export interface FileRoutesByTo {
   '/evaluacion': typeof EvaluacionRoute
   '/gantt': typeof GanttRoute
   '/habitos': typeof HabitosRoute
-  '/okr': typeof OkrRoute
   '/plantillas': typeof PlantillasRoute
   '/presupuesto': typeof PresupuestoRoute
   '/recordatorios': typeof RecordatoriosRoute
@@ -213,7 +205,6 @@ export interface FileRoutesById {
   '/evaluacion': typeof EvaluacionRoute
   '/gantt': typeof GanttRoute
   '/habitos': typeof HabitosRoute
-  '/okr': typeof OkrRoute
   '/plantillas': typeof PlantillasRoute
   '/presupuesto': typeof PresupuestoRoute
   '/recordatorios': typeof RecordatoriosRoute
@@ -240,7 +231,6 @@ export interface FileRouteTypes {
     | '/evaluacion'
     | '/gantt'
     | '/habitos'
-    | '/okr'
     | '/plantillas'
     | '/presupuesto'
     | '/recordatorios'
@@ -265,7 +255,6 @@ export interface FileRouteTypes {
     | '/evaluacion'
     | '/gantt'
     | '/habitos'
-    | '/okr'
     | '/plantillas'
     | '/presupuesto'
     | '/recordatorios'
@@ -290,7 +279,6 @@ export interface FileRouteTypes {
     | '/evaluacion'
     | '/gantt'
     | '/habitos'
-    | '/okr'
     | '/plantillas'
     | '/presupuesto'
     | '/recordatorios'
@@ -316,7 +304,6 @@ export interface RootRouteChildren {
   EvaluacionRoute: typeof EvaluacionRoute
   GanttRoute: typeof GanttRoute
   HabitosRoute: typeof HabitosRoute
-  OkrRoute: typeof OkrRoute
   PlantillasRoute: typeof PlantillasRoute
   PresupuestoRoute: typeof PresupuestoRoute
   RecordatoriosRoute: typeof RecordatoriosRoute
@@ -399,13 +386,6 @@ declare module '@tanstack/react-router' {
       path: '/plantillas'
       fullPath: '/plantillas'
       preLoaderRoute: typeof PlantillasRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/okr': {
-      id: '/okr'
-      path: '/okr'
-      fullPath: '/okr'
-      preLoaderRoute: typeof OkrRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/habitos': {
@@ -508,7 +488,6 @@ const rootRouteChildren: RootRouteChildren = {
   EvaluacionRoute: EvaluacionRoute,
   GanttRoute: GanttRoute,
   HabitosRoute: HabitosRoute,
-  OkrRoute: OkrRoute,
   PlantillasRoute: PlantillasRoute,
   PresupuestoRoute: PresupuestoRoute,
   RecordatoriosRoute: RecordatoriosRoute,
@@ -523,13 +502,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}

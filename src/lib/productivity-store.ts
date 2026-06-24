@@ -8,8 +8,9 @@ export interface TimeEntry { id: string; taskId?: string; taskName: string; proj
 export interface ActiveTimer { taskName: string; project: string; startedAt: number; pausedAt?: number; accumulated: number; }
 export interface WeeklyReview { id: string; weekStart: string; good: string; improve: string; score: number; completedCount: number; }
 export interface Member { id: string; name: string; email: string; role: "admin" | "editor" | "viewer"; permissions: string[]; }
-export interface MeetingAgreement { id: string; text: string; assignee?: string; convertedTaskId?: string; }
-export interface Meeting { id: string; title: string; date: string; agenda: string; minutes: string; agreements: MeetingAgreement[]; }
+export interface MeetingAgreement { id: string; text: string; assignee?: string; convertedTaskId?: string; done?: boolean; }
+export interface Meeting { id: string; title: string; date: string; agenda: string; minutes: string; agreements: MeetingAgreement[]; completed?: boolean; archivedAt?: string; }
+export interface AutoStateRule { id: string; name: string; trigger: "overdue" | "all_subtasks_done" | "time_logged"; action: "set_in_progress" | "set_completed" | "notify"; enabled: boolean; }
 export interface RoadmapItem { id: string; name: string; quarter: string; year: number; progress: number; status: "planeado" | "en_curso" | "completado" | "bloqueado"; }
 export interface SprintTask { id: string; name: string; estimate: number; done: boolean; }
 export interface Sprint { id: string; name: string; startDate: string; endDate: string; active: boolean; closed: boolean; tasks: SprintTask[]; backlog: SprintTask[]; retro?: { good: string; bad: string; actions: string }; }
@@ -34,6 +35,7 @@ interface State {
   autoStates: AutoStateConfig;
   changeLog: ChangeLog[];
   rules: Rule[];
+  autoRules: AutoStateRule[];
   estimates: TaskEstimate[];
   // mutations
   toggleHabit: (id: string, date: string) => void;
@@ -53,7 +55,11 @@ interface State {
   updateMeeting: (id: string, p: Partial<Meeting>) => void;
   removeMeeting: (id: string) => void;
   addAgreement: (mid: string, text: string) => void;
+  toggleAgreementDone: (mid: string, aid: string) => void;
+  removeAgreement: (mid: string, aid: string) => void;
   convertAgreement: (mid: string, aid: string, taskId: string) => void;
+  completeMeeting: (mid: string) => void;
+  reopenMeeting: (mid: string) => void;
   addRoadmap: (r: Omit<RoadmapItem, "id">) => void;
   updateRoadmap: (id: string, p: Partial<RoadmapItem>) => void;
   removeRoadmap: (id: string) => void;
@@ -65,13 +71,18 @@ interface State {
   toggleSprintTask: (sid: string, tid: string) => void;
   closeSprint: (sid: string, retro: Sprint["retro"]) => void;
   addTemplate: (t: Omit<Template, "id">) => void;
+  updateTemplate: (id: string, p: Partial<Omit<Template, "id">>) => void;
   removeTemplate: (id: string) => void;
   setReminders: (r: ReminderConfig) => void;
   setAutoStates: (a: AutoStateConfig) => void;
   addLog: (entity: string, message: string) => void;
   addRule: (r: Omit<Rule, "id">) => void;
+  updateRule: (id: string, p: Partial<Omit<Rule, "id">>) => void;
   toggleRule: (id: string) => void;
   removeRule: (id: string) => void;
+  addAutoRule: (r: Omit<AutoStateRule, "id">) => void;
+  updateAutoRule: (id: string, p: Partial<Omit<AutoStateRule, "id">>) => void;
+  removeAutoRule: (id: string) => void;
   setEstimate: (taskId: string, estimatedHours: number, actualHours: number) => void;
 }
 
@@ -193,6 +204,7 @@ export const useProductivity = create<State>()(
       autoStates: { subtaskToParent: true, overdueAuto: true, hoursToProgress: true },
       changeLog: [],
       rules: seedRules(),
+      autoRules: [],
       estimates: [],
 
       toggleHabit: (id, date) => set((s) => ({
@@ -238,12 +250,24 @@ export const useProductivity = create<State>()(
       updateMeeting: (id, p) => set((s) => ({ meetings: s.meetings.map((m) => m.id === id ? { ...m, ...p } : m) })),
       removeMeeting: (id) => set((s) => ({ meetings: s.meetings.filter((m) => m.id !== id) })),
       addAgreement: (mid, text) => set((s) => ({
-        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: [...m.agreements, { id: crypto.randomUUID(), text }] } : m),
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: [...m.agreements, { id: crypto.randomUUID(), text, done: false }] } : m),
+      })),
+      toggleAgreementDone: (mid, aid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: m.agreements.map((a) => a.id === aid ? { ...a, done: !a.done } : a) } : m),
+      })),
+      removeAgreement: (mid, aid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, agreements: m.agreements.filter((a) => a.id !== aid) } : m),
       })),
       convertAgreement: (mid, aid, taskId) => set((s) => ({
         meetings: s.meetings.map((m) => m.id === mid ? {
-          ...m, agreements: m.agreements.map((a) => a.id === aid ? { ...a, convertedTaskId: taskId } : a),
+          ...m, agreements: m.agreements.map((a) => a.id === aid ? { ...a, convertedTaskId: taskId, done: true } : a),
         } : m),
+      })),
+      completeMeeting: (mid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, completed: true, archivedAt: new Date().toISOString() } : m),
+      })),
+      reopenMeeting: (mid) => set((s) => ({
+        meetings: s.meetings.map((m) => m.id === mid ? { ...m, completed: false, archivedAt: undefined } : m),
       })),
 
       addRoadmap: (r) => set((s) => ({ roadmap: [...s.roadmap, { ...r, id: crypto.randomUUID() }] })),
@@ -274,6 +298,7 @@ export const useProductivity = create<State>()(
       })),
 
       addTemplate: (t) => set((s) => ({ templates: [...s.templates, { ...t, id: crypto.randomUUID() }] })),
+      updateTemplate: (id, p) => set((s) => ({ templates: s.templates.map((t) => t.id === id ? { ...t, ...p } : t) })),
       removeTemplate: (id) => set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
 
       setReminders: (r) => set({ reminders: r }),
@@ -283,8 +308,13 @@ export const useProductivity = create<State>()(
       })),
 
       addRule: (r) => set((s) => ({ rules: [...s.rules, { ...r, id: crypto.randomUUID() }] })),
+      updateRule: (id, p) => set((s) => ({ rules: s.rules.map((r) => r.id === id ? { ...r, ...p } : r) })),
       toggleRule: (id) => set((s) => ({ rules: s.rules.map((r) => r.id === id ? { ...r, enabled: !r.enabled } : r) })),
       removeRule: (id) => set((s) => ({ rules: s.rules.filter((r) => r.id !== id) })),
+
+      addAutoRule: (r) => set((s) => ({ autoRules: [...s.autoRules, { ...r, id: crypto.randomUUID() }] })),
+      updateAutoRule: (id, p) => set((s) => ({ autoRules: s.autoRules.map((r) => r.id === id ? { ...r, ...p } : r) })),
+      removeAutoRule: (id) => set((s) => ({ autoRules: s.autoRules.filter((r) => r.id !== id) })),
 
       setEstimate: (taskId, estimatedHours, actualHours) => set((s) => {
         const exist = s.estimates.find((e) => e.taskId === taskId);

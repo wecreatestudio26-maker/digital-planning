@@ -1,15 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { format, subDays, addDays, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
+import { format, subDays, startOfMonth, endOfMonth, eachDayOfInterval } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Trash2, Flame } from "lucide-react";
 import { useProductivity, computeStreak } from "@/lib/productivity-store";
-import { useExtra } from "@/lib/extra-store";
 
 export const Route = createFileRoute("/habitos")({
   head: () => ({ meta: [{ title: "Hábitos — Planeador" }, { name: "description", content: "Rastreador de hábitos diario con heatmap y rachas." }] }),
@@ -18,10 +16,8 @@ export const Route = createFileRoute("/habitos")({
 
 function HabitsPage() {
   const { habits, toggleHabit, addHabit, removeHabit } = useProductivity();
-  const { okrs } = useExtra();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
-  const [okrId, setOkrId] = useState<string>("");
   const days = Array.from({ length: 7 }, (_, i) => subDays(new Date(), 6 - i));
   const month = eachDayOfInterval({ start: startOfMonth(new Date()), end: endOfMonth(new Date()) });
 
@@ -38,19 +34,10 @@ function HabitsPage() {
             <DialogHeader><DialogTitle>Nuevo hábito</DialogTitle></DialogHeader>
             <div className="space-y-3">
               <div><Label>Nombre</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
-              <div>
-                <Label>Vincular a OKR (opcional)</Label>
-                <Select value={okrId} onValueChange={setOkrId}>
-                  <SelectTrigger><SelectValue placeholder="Sin vincular" /></SelectTrigger>
-                  <SelectContent>
-                    {okrs.map((o) => <SelectItem key={o.id} value={o.id}>{o.name}</SelectItem>)}
-                  </SelectContent>
-                </Select>
-              </div>
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={() => { if (name) { addHabit({ name, okrId: okrId || undefined }); setName(""); setOkrId(""); setOpen(false); } }}>Guardar</Button>
+              <Button onClick={() => { if (name) { addHabit({ name }); setName(""); setOpen(false); } }}>Guardar</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -71,13 +58,9 @@ function HabitsPage() {
             <tbody>
               {habits.map((h) => {
                 const streak = computeStreak(h.log);
-                const okr = okrs.find((o) => o.id === h.okrId);
                 return (
                   <tr key={h.id} className="border-t border-border">
-                    <td className="py-2.5">
-                      <div className="font-medium">{h.name}</div>
-                      {okr && <div className="text-xs text-muted-foreground">OKR: {okr.name}</div>}
-                    </td>
+                    <td className="py-2.5"><div className="font-medium">{h.name}</div></td>
                     {days.map((d) => {
                       const ds = format(d, "yyyy-MM-dd");
                       const done = h.log[ds];

@@ -4,18 +4,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, AlertTriangle, TrendingUp, Wallet, CheckCircle2 } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Plus, Trash2, AlertTriangle, TrendingUp, Wallet, CheckCircle2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
-import { useExtra, type BudgetItem } from "@/lib/extra-store";
+import { useExtra, budgetActual, type BudgetItem, type BudgetSubItem } from "@/lib/extra-store";
 import { format, parseISO } from "date-fns";
 
 export const Route = createFileRoute("/presupuesto")({
   head: () => ({
     meta: [
       { title: "Presupuesto — Planeador" },
-      { name: "description", content: "Control presupuestal: plan vs real, flujo de caja y alertas." },
+      { name: "description", content: "Control presupuestal con rubros, subrubros y alertas." },
     ],
   }),
   component: BudgetPage,
@@ -26,30 +25,38 @@ function fmt(n: number) {
 }
 
 function BudgetPage() {
-  const { budget, addBudget, removeBudget } = useExtra();
-  const [open, setOpen] = useState(false);
+  const { budget, addBudget, updateBudget, removeBudget, addSubItem, updateSubItem, removeSubItem } = useExtra();
+  const [budgetDialog, setBudgetDialog] = useState<{ mode: "create" | "edit"; item?: BudgetItem } | null>(null);
+  const [subDialog, setSubDialog] = useState<{ budgetId: string; sub?: BudgetSubItem } | null>(null);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
   const planned = budget.reduce((s, b) => s + b.planned, 0);
-  const actual = budget.reduce((s, b) => s + b.actual, 0);
+  const actual = budget.reduce((s, b) => s + budgetActual(b), 0);
   const variance = actual - planned;
-  const overbudget = budget.filter((b) => b.actual > b.planned);
+  const overbudget = budget.filter((b) => budgetActual(b) > b.planned);
 
   const byCat = useMemo(() => {
     const m = new Map<string, { category: string; planned: number; actual: number }>();
     budget.forEach((b) => {
       const prev = m.get(b.category) ?? { category: b.category, planned: 0, actual: 0 };
-      m.set(b.category, { category: b.category, planned: prev.planned + b.planned, actual: prev.actual + b.actual });
+      m.set(b.category, { category: b.category, planned: prev.planned + b.planned, actual: prev.actual + budgetActual(b) });
     });
     return Array.from(m.values());
   }, [budget]);
 
   const cashflow = useMemo(() => {
-    const sorted = [...budget].sort((a, b) => a.date.localeCompare(b.date));
+    type Event = { date: string; planned: number; actual: number };
+    const events: Event[] = [];
+    budget.forEach((b) => {
+      events.push({ date: b.date, planned: b.planned, actual: 0 });
+      b.subItems.forEach((s) => events.push({ date: s.date, planned: 0, actual: s.amount }));
+    });
+    events.sort((a, b) => a.date.localeCompare(b.date));
     let cumPlanned = 0, cumActual = 0;
-    return sorted.map((b) => {
-      cumPlanned += b.planned;
-      cumActual += b.actual;
-      return { date: format(parseISO(b.date), "dd MMM"), Planeado: cumPlanned, Real: cumActual };
+    return events.map((e) => {
+      cumPlanned += e.planned;
+      cumActual += e.actual;
+      return { date: format(parseISO(e.date), "dd MMM"), Planeado: cumPlanned, Real: cumActual };
     });
   }, [budget]);
 
@@ -60,12 +67,9 @@ function BudgetPage() {
       <div className="flex items-end justify-between gap-4">
         <div>
           <h2 className="text-2xl font-semibold tracking-tight">Control Presupuestal</h2>
-          <p className="text-sm text-muted-foreground">Planeado vs real, flujo de caja y proyección.</p>
+          <p className="text-sm text-muted-foreground">Planeado vs real (suma de subrubros), flujo de caja y proyección.</p>
         </div>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> Nuevo rubro</Button></DialogTrigger>
-          <BudgetDialog onClose={() => setOpen(false)} onSave={(b) => { addBudget(b); setOpen(false); }} />
-        </Dialog>
+        <Button onClick={() => setBudgetDialog({ mode: "create" })}><Plus className="h-4 w-4" /> Nuevo rubro</Button>
       </div>
 
       {overbudget.length > 0 && (
@@ -74,7 +78,7 @@ function BudgetPage() {
           <div className="text-sm">
             <p className="font-medium text-destructive">{overbudget.length} rubro(s) con sobrecosto</p>
             <p className="text-muted-foreground mt-1">
-              {overbudget.map((b) => `${b.description} (+${fmt(b.actual - b.planned)})`).join(" · ")}
+              {overbudget.map((b) => `${b.description} (+${fmt(budgetActual(b) - b.planned)})`).join(" · ")}
             </p>
           </div>
         </div>
@@ -137,69 +141,163 @@ function BudgetPage() {
 
       <Card>
         <CardHeader><CardTitle className="text-base">Rubros</CardTitle></CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Descripción</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead className="text-right">Planeado</TableHead>
-                <TableHead className="text-right">Real</TableHead>
-                <TableHead className="text-right">Variación</TableHead>
-                <TableHead></TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {budget.map((b) => {
-                const diff = b.actual - b.planned;
-                const over = diff > 0;
-                return (
-                  <TableRow key={b.id}>
-                    <TableCell className="font-medium">{b.category}</TableCell>
-                    <TableCell className="text-muted-foreground">{b.description}</TableCell>
-                    <TableCell className="text-muted-foreground">{b.date}</TableCell>
-                    <TableCell className="text-right tabular-nums">{fmt(b.planned)}</TableCell>
-                    <TableCell className="text-right tabular-nums">{fmt(b.actual)}</TableCell>
-                    <TableCell className={`text-right tabular-nums ${over ? "text-destructive" : "text-primary"}`}>
+        <CardContent className="space-y-2">
+          {budget.map((b) => {
+            const real = budgetActual(b);
+            const diff = real - b.planned;
+            const over = diff > 0;
+            const isOpen = expanded[b.id];
+            return (
+              <div key={b.id} className="rounded-md border border-border">
+                <div className="flex items-center gap-2 p-3">
+                  <button onClick={() => setExpanded({ ...expanded, [b.id]: !isOpen })} className="text-muted-foreground hover:text-foreground">
+                    {isOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                  </button>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-medium truncate">{b.description}</div>
+                    <div className="text-xs text-muted-foreground">{b.category} · {b.date} · {b.subItems.length} subrubro(s)</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-muted-foreground">Planeado</div>
+                    <div className="text-sm tabular-nums">{fmt(b.planned)}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs text-muted-foreground">Real</div>
+                    <div className="text-sm tabular-nums">{fmt(real)}</div>
+                  </div>
+                  <div className="text-right w-24">
+                    <div className="text-xs text-muted-foreground">Variación</div>
+                    <div className={`text-sm tabular-nums ${over ? "text-destructive" : "text-primary"}`}>
                       {over ? "+" : ""}{fmt(diff)}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="ghost" size="icon" onClick={() => removeBudget(b.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+                    </div>
+                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => setBudgetDialog({ mode: "edit", item: b })}><Pencil className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => removeBudget(b.id)}><Trash2 className="h-4 w-4" /></Button>
+                </div>
+                {isOpen && (
+                  <div className="border-t border-border p-3 space-y-2 bg-muted/20">
+                    {b.subItems.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Sin subrubros. Agrega el primer gasto.</p>
+                    ) : (
+                      <div className="space-y-1.5">
+                        {b.subItems.map((s) => (
+                          <div key={s.id} className="flex items-center gap-2 text-sm rounded border border-border bg-background p-2">
+                            <span className="flex-1 truncate">{s.description}</span>
+                            <span className="text-xs text-muted-foreground">{s.date}</span>
+                            <span className="tabular-nums w-24 text-right">{fmt(s.amount)}</span>
+                            <Button variant="ghost" size="icon" onClick={() => setSubDialog({ budgetId: b.id, sub: s })}><Pencil className="h-3.5 w-3.5" /></Button>
+                            <Button variant="ghost" size="icon" onClick={() => removeSubItem(b.id, s.id)}><Trash2 className="h-3.5 w-3.5" /></Button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    <Button variant="outline" size="sm" onClick={() => setSubDialog({ budgetId: b.id })}>
+                      <Plus className="h-3.5 w-3.5" /> Agregar subrubro
+                    </Button>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </CardContent>
       </Card>
+
+      {budgetDialog && (
+        <BudgetDialog
+          item={budgetDialog.item}
+          onClose={() => setBudgetDialog(null)}
+          onSave={(b) => {
+            if (budgetDialog.mode === "edit" && budgetDialog.item) updateBudget(budgetDialog.item.id, b);
+            else addBudget(b);
+            setBudgetDialog(null);
+          }}
+        />
+      )}
+      {subDialog && (
+        <SubItemDialog
+          sub={subDialog.sub}
+          onClose={() => setSubDialog(null)}
+          onSave={(s) => {
+            if (subDialog.sub) updateSubItem(subDialog.budgetId, subDialog.sub.id, s);
+            else addSubItem(subDialog.budgetId, s);
+            setSubDialog(null);
+          }}
+        />
+      )}
     </div>
   );
 }
 
-function BudgetDialog({ onSave, onClose }: { onSave: (b: Omit<BudgetItem, "id">) => void; onClose: () => void }) {
-  const [form, setForm] = useState<Omit<BudgetItem, "id">>({
-    category: "", description: "", planned: 0, actual: 0, date: format(new Date(), "yyyy-MM-dd"),
+function BudgetDialog({ item, onSave, onClose }: {
+  item?: BudgetItem;
+  onSave: (b: Omit<BudgetItem, "id" | "subItems">) => void; onClose: () => void;
+}) {
+  const [form, setForm] = useState({
+    category: item?.category ?? "",
+    description: item?.description ?? "",
+    planned: item?.planned ?? 0,
+    date: item?.date ?? format(new Date(), "yyyy-MM-dd"),
   });
   return (
-    <DialogContent>
-      <DialogHeader><DialogTitle>Nuevo rubro</DialogTitle></DialogHeader>
-      <div className="space-y-3">
-        <div className="grid grid-cols-2 gap-3">
-          <div><Label>Categoría</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
-          <div><Label>Fecha</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{item ? "Editar rubro" : "Nuevo rubro"}</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label>Categoría</Label><Input value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} /></div>
+            <div><Label>Fecha</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+          </div>
+          <div><Label>Descripción</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+          <div>
+            <Label>Monto planeado ($)</Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+              <Input type="number" min={0} step="0.01" value={form.planned} onChange={(e) => setForm({ ...form, planned: Number(e.target.value) })} className="pl-7" />
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">Valor monetario presupuestado. El valor real se calcula sumando los subrubros que agregues.</p>
+          </div>
         </div>
-        <div><Label>Descripción</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
-        <div className="grid grid-cols-2 gap-3">
-          <div><Label>Planeado</Label><Input type="number" value={form.planned} onChange={(e) => setForm({ ...form, planned: Number(e.target.value) })} /></div>
-          <div><Label>Real</Label><Input type="number" value={form.actual} onChange={(e) => setForm({ ...form, actual: Number(e.target.value) })} /></div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={() => form.category && onSave(form)}>{item ? "Guardar" : "Crear rubro"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function SubItemDialog({ sub, onSave, onClose }: {
+  sub?: BudgetSubItem;
+  onSave: (s: Omit<BudgetSubItem, "id">) => void; onClose: () => void;
+}) {
+  const [form, setForm] = useState({
+    description: sub?.description ?? "",
+    amount: sub?.amount ?? 0,
+    date: sub?.date ?? format(new Date(), "yyyy-MM-dd"),
+  });
+  return (
+    <Dialog open onOpenChange={(o) => !o && onClose()}>
+      <DialogContent>
+        <DialogHeader><DialogTitle>{sub ? "Editar subrubro" : "Nuevo subrubro"}</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div><Label>Descripción del gasto</Label><Input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} /></div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label>Monto ($)</Label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">$</span>
+                <Input type="number" min={0} step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: Number(e.target.value) })} className="pl-7" />
+              </div>
+            </div>
+            <div><Label>Fecha</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+          </div>
+          <p className="text-xs text-muted-foreground">Este monto se sumará al "Real" del rubro padre.</p>
         </div>
-      </div>
-      <DialogFooter>
-        <Button variant="outline" onClick={onClose}>Cancelar</Button>
-        <Button onClick={() => form.category && onSave(form)}>Guardar</Button>
-      </DialogFooter>
-    </DialogContent>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button onClick={() => form.description && onSave(form)}>{sub ? "Guardar" : "Agregar"}</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

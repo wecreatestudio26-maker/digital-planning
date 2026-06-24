@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet, Target,
+  LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet,
   Repeat, Timer, ClipboardCheck, Focus, Scale, TrendingUp, BellRing,
   Users, Gauge, Mic, Map, Zap, FileStack, Bell, Settings2, Workflow,
 } from "lucide-react";
@@ -19,7 +19,6 @@ const groups = [
     { title: "Gantt", url: "/gantt", icon: GanttChartSquare },
     { title: "Riesgos", url: "/riesgos", icon: ShieldAlert },
     { title: "Presupuesto", url: "/presupuesto", icon: Wallet },
-    { title: "OKR", url: "/okr", icon: Target },
   ]},
   { label: "Productividad", items: [
     { title: "Hábitos", url: "/habitos", icon: Repeat },
