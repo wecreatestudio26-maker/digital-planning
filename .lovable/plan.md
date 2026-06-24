@@ -1,66 +1,65 @@
-# Plan: 16 nuevos módulos para el Planeador
+## Checklist de actualizaciones
 
-Es un alcance grande. Lo entrego en una sola implementación, manteniendo el diseño actual (sidebar oscuro, acento verde) y usando Zustand con persistencia en localStorage para todo el estado.
+### GESTIÓN
 
-## Arquitectura
+**1. Gantt — múltiples diagramas**
+- [ ] Añadir colección `ganttCharts` al store (id, nombre, lista de tareas)
+- [ ] Selector desplegable arriba para cambiar entre diagramas + botón "Nuevo diagrama" + renombrar/eliminar
+- [ ] Migrar tareas existentes a un diagrama "Principal"
+- [ ] Mejorar creación de tareas: campos "Tarea padre" (opcional, seleccionar existente o ninguna) y "Depende de" (opcional, multi-select de tareas del mismo diagrama)
+- [ ] Editar tareas tanto desde el cronograma (clic en barra) como desde la tabla de detalle (botón editar por fila)
+- [ ] Validar dependencias circulares al guardar
 
-- Un nuevo store `src/lib/productivity-store.ts` que agrupa los datos de los 16 módulos (hábitos, time tracking, evaluaciones, miembros, reuniones, sprints, roadmap, plantillas, recordatorios, reglas, logs de cambios).
-- Reutilizo `activities-store` y `extra-store` existentes; las nuevas vistas leen de ellos cuando aplica (Kanban, OKR, presupuesto, riesgos).
-- Sidebar se reorganiza con grupos colapsables por categoría para no saturar.
+**2. Riesgos — edición**
+- [ ] Botón editar por fila que abre el mismo diálogo de creación precargado
+- [ ] Permitir modificar probabilidad, impacto, mitigación, estado y recalcular nivel automáticamente
 
-## Rutas nuevas (src/routes/)
+**3. Presupuesto — rubros y subrubros**
+- [ ] Etiquetar campos planeado/real con prefijo "$" y validación numérica
+- [ ] Añadir sub-rubros por rubro (concepto + monto), el real del rubro = suma de subrubros
+- [ ] Cada rubro es expandible/colapsable (chevron) mostrando los subrubros
+- [ ] Editar rubro (nombre, planeado) y editar/eliminar subrubros
+- [ ] Alertas de sobrecosto se mantienen comparando planeado vs suma de subrubros
 
-Productividad
-- `habitos.tsx` — registro diario, racha, heatmap mensual, vínculo a OKR
-- `tiempo.tsx` — temporizador start/pause/stop + entrada manual + resumen diario/semanal
-- `evaluacion.tsx` — review semanal (auto-genera entrada cada domingo), score 1-10, tendencia
-- `enfoque.tsx` — modo enfoque pantalla completa con checklist + temporizador (oculta sidebar)
+**4. OKR — eliminar**
+- [ ] Borrar `src/routes/okr.tsx`, ítem del sidebar, claves del store y referencias en hábitos
 
-Seguimiento
-- `estimado-vs-real.tsx` — tabla comparativa con % variación, rojo si >20%
-- `velocidad.tsx` — line chart de tareas completadas últimas 8 semanas
-- `alertas.tsx` — listado de inactividad (3/7/5 días)
+### COLABORACIÓN
 
-Colaboración
-- `equipo.tsx` — miembros con roles (admin/editor/viewer), invitación por correo (mock), permisos por módulo
-- `carga.tsx` — workload por persona con semáforo verde/amarillo/rojo
-- `reuniones.tsx` — agenda, actas, acuerdos → botón "convertir en tarea"
+**5. Equipo — invitación por correo real (requiere Lovable Cloud)**
+- [ ] Activar Lovable Cloud
+- [ ] Tabla `profiles` + tabla `team_members` (role, permissions[]) + `user_roles` con enum admin/editor/viewer
+- [ ] Función `has_role` (security definer) y políticas RLS basadas en rol
+- [ ] Server function que invita por email vía Supabase Auth `inviteUserByEmail` (correo con link mágico)
+- [ ] Gate de rutas: admin edita todo, editor edita módulos habilitados, viewer solo lectura
+- [ ] UI de permisos refleja restricciones por rol
 
-Planificación
-- `roadmap.tsx` — bloques por trimestre/año arrastrables con % y color por estado
-- `sprints.tsx` — backlog, sprint activo, burndown chart, retrospectiva
-- `plantillas.tsx` — 3 prediseñadas (lanzamiento, marketing, software) + crear/aplicar
+**6. Reuniones — completar y archivar**
+- [ ] Checkbox por acuerdo (completado individual)
+- [ ] Botón "Marcar reunión completa" (sólo si todos los acuerdos están en check)
+- [ ] Pestañas "Activas" / "Archivadas" en la vista
+- [ ] Las archivadas siguen siendo editables y se pueden reactivar
 
-Automatización
-- `recordatorios.tsx` — config X días antes deadline, 30 min antes reunión, weekly review
-- `auto-estados.tsx` — toggles para reglas automáticas + log de cambios
-- `reglas.tsx` — motor "si esto → entonces esto" con condiciones/acciones predefinidas
+### PLANIFICACIÓN
 
-## Sidebar
+**7. Plantillas**
+- [ ] Botón mostrar/ocultar tareas por plantilla (colapsar lista)
+- [ ] Editar plantilla después de creada (nombre, tareas, días)
+- [ ] Etiqueta clara "Duración (días)" junto al campo de tareas
 
-`AppSidebar.tsx` se reescribe con secciones agrupadas:
-- General (Dashboard, Calendario, Actividades)
-- Gestión (Gantt, Riesgos, Presupuesto, OKR)
-- Productividad (Hábitos, Tiempo, Evaluación, Enfoque)
-- Seguimiento (Est. vs Real, Velocidad, Alertas)
-- Colaboración (Equipo, Carga, Reuniones)
-- Planificación (Roadmap, Sprints, Plantillas)
-- Automatización (Recordatorios, Auto-estados, Reglas)
+### AUTOMATIZACIÓN
 
-Se quita el item "Actividades" duplicado actual.
+**8. Auto-estados — CRUD de reglas**
+- [ ] Permitir crear reglas personalizadas (no solo los 3 toggles fijos)
+- [ ] Editar y eliminar reglas existentes
+- [ ] Mantener log de cambios
 
-## Detalles técnicos
+**9. Reglas — editar y eliminar**
+- [ ] Botón editar (abre diálogo precargado) además del eliminar existente
 
-- Heatmap de hábitos: grid CSS 7×N con tonos de verde por intensidad.
-- Temporizador: `useEffect` + `setInterval`, persiste sesión activa.
-- Modo enfoque: ruta `/enfoque?taskId=` que el layout root detecta para ocultar sidebar.
-- Burndown / velocidad: recharts (ya instalado).
-- Roadmap drag: HTML5 drag nativo (no añado libs).
-- Cambio automático de estados: efecto en el store que evalúa al montar la app y registra entradas en `changeLog`.
-- Motor de reglas: lista declarativa `{ when: {...}, then: {...} }` evaluada al cargar y al mutar.
+---
 
-## Persistencia
-
-Todo en `localStorage` bajo claves `planeador-productivity`, `planeador-team`, `planeador-sprints`, etc. No se toca backend.
-
-¿Procedo con la implementación completa?
+### Notas técnicas
+- Cloud sólo se activa para el módulo Equipo (auth e invitaciones reales). El resto sigue en `localStorage`.
+- Cambios son grandes; los implementaré en este orden: OKR eliminado → Gantt → Riesgos → Presupuesto → Plantillas → Auto-estados/Reglas → Reuniones → Equipo (Cloud al final por ser el más invasivo).
+- Confirma para proceder, o dime si quieres reordenar/recortar.
