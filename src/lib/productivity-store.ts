@@ -298,6 +298,7 @@ export const useProductivity = create<State>()(
       })),
 
       addTemplate: (t) => set((s) => ({ templates: [...s.templates, { ...t, id: crypto.randomUUID() }] })),
+      updateTemplate: (id, p) => set((s) => ({ templates: s.templates.map((t) => t.id === id ? { ...t, ...p } : t) })),
       removeTemplate: (id) => set((s) => ({ templates: s.templates.filter((t) => t.id !== id) })),
 
       setReminders: (r) => set({ reminders: r }),
@@ -307,8 +308,13 @@ export const useProductivity = create<State>()(
       })),
 
       addRule: (r) => set((s) => ({ rules: [...s.rules, { ...r, id: crypto.randomUUID() }] })),
+      updateRule: (id, p) => set((s) => ({ rules: s.rules.map((r) => r.id === id ? { ...r, ...p } : r) })),
       toggleRule: (id) => set((s) => ({ rules: s.rules.map((r) => r.id === id ? { ...r, enabled: !r.enabled } : r) })),
       removeRule: (id) => set((s) => ({ rules: s.rules.filter((r) => r.id !== id) })),
+
+      addAutoRule: (r) => set((s) => ({ autoRules: [...s.autoRules, { ...r, id: crypto.randomUUID() }] })),
+      updateAutoRule: (id, p) => set((s) => ({ autoRules: s.autoRules.map((r) => r.id === id ? { ...r, ...p } : r) })),
+      removeAutoRule: (id) => set((s) => ({ autoRules: s.autoRules.filter((r) => r.id !== id) })),
 
       setEstimate: (taskId, estimatedHours, actualHours) => set((s) => {
         const exist = s.estimates.find((e) => e.taskId === taskId);
