@@ -10,7 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Plus, Trash2, ArrowRight, Pencil } from "lucide-react";
 import { useProductivity, type Rule } from "@/lib/productivity-store";
 
-export const Route = createFileRoute("/reglas")({
+export const Route = createFileRoute("/_authenticated/reglas")({
   head: () => ({ meta: [{ title: "Motor de Reglas — Planeador" }, { name: "description", content: "Reglas si esto, entonces esto." }] }),
   component: RulesPage,
 });

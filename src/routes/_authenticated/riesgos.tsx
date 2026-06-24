@@ -12,7 +12,7 @@ import { Plus, Trash2, Pencil } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { riskLevel, useExtra, type Risk, type RiskStatus } from "@/lib/extra-store";
 
-export const Route = createFileRoute("/riesgos")({
+export const Route = createFileRoute("/_authenticated/riesgos")({
   head: () => ({
     meta: [
       { title: "Riesgos — Planeador" },

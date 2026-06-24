@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Plus, Trash2, Flame } from "lucide-react";
 import { useProductivity, computeStreak } from "@/lib/productivity-store";
 
-export const Route = createFileRoute("/habitos")({
+export const Route = createFileRoute("/_authenticated/habitos")({
   head: () => ({ meta: [{ title: "Hábitos — Planeador" }, { name: "description", content: "Rastreador de hábitos diario con heatmap y rachas." }] }),
   component: HabitsPage,
 });

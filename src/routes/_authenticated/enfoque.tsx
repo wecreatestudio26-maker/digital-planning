@@ -6,7 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { ArrowLeft, Play, Pause, RotateCcw } from "lucide-react";
 import { useActivities } from "@/lib/activities-store";
 
-export const Route = createFileRoute("/enfoque")({
+export const Route = createFileRoute("/_authenticated/enfoque")({
   validateSearch: (s: Record<string, unknown>) => ({ taskId: (s.taskId as string) || "" }),
   head: () => ({ meta: [{ title: "Modo Enfoque — Planeador" }, { name: "description", content: "Modo enfoque sin distracciones." }] }),
   component: FocusPage,

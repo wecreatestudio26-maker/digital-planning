@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useProductivity, type AutoStateRule } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
 
-export const Route = createFileRoute("/auto-estados")({
+export const Route = createFileRoute("/_authenticated/auto-estados")({
   head: () => ({ meta: [{ title: "Auto-estados — Planeador" }, { name: "description", content: "Cambio automático de estados de tareas." }] }),
   component: AutoStatesPage,
 });

@@ -11,7 +11,7 @@ import { STATUS_LABEL, type Status } from "@/lib/types";
 import { CheckCircle2, Clock, ListChecks, Loader2 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 
-export const Route = createFileRoute("/")({
+export const Route = createFileRoute("/_authenticated/")({
   head: () => ({
     meta: [
       { title: "Dashboard — Planeador de Actividades" },

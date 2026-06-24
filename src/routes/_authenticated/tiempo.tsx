@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Play, Pause, Square, Plus, Trash2 } from "lucide-react";
 import { useProductivity } from "@/lib/productivity-store";
 
-export const Route = createFileRoute("/tiempo")({
+export const Route = createFileRoute("/_authenticated/tiempo")({
   head: () => ({ meta: [{ title: "Registro de Tiempo — Planeador" }, { name: "description", content: "Temporizador y registro de horas por tarea." }] }),
   component: TimePage,
 });

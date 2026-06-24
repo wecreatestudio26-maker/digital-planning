@@ -11,7 +11,7 @@ import { Plus, Trash2, GitBranch, Pencil, FilePlus } from "lucide-react";
 import { toast } from "sonner";
 import { computeCriticalPath, hasCycle, useExtra, type GanttTask } from "@/lib/extra-store";
 
-export const Route = createFileRoute("/gantt")({
+export const Route = createFileRoute("/_authenticated/gantt")({
   head: () => ({
     meta: [
       { title: "Gantt — Planeador" },

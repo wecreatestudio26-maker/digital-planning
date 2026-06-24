@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { useActivities } from "@/lib/activities-store";
 
-export const Route = createFileRoute("/carga")({
+export const Route = createFileRoute("/_authenticated/carga")({
   head: () => ({ meta: [{ title: "Carga de Trabajo — Planeador" }, { name: "description", content: "Carga por persona con semáforo." }] }),
   component: WorkloadPage,
 });

@@ -20,7 +20,7 @@ import { StatusBadge, PriorityBadge } from "@/components/StatusBadge";
 import { ActivityForm } from "@/components/ActivityForm";
 import { exportToPDF, exportToExcel } from "@/lib/export";
 
-export const Route = createFileRoute("/actividades")({
+export const Route = createFileRoute("/_authenticated/actividades")({
   head: () => ({
     meta: [
       { title: "Actividades — Planeador" },

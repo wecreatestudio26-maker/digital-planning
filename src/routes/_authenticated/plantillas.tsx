@@ -11,7 +11,7 @@ import { toast } from "sonner";
 import { useProductivity, type Template } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
 
-export const Route = createFileRoute("/plantillas")({
+export const Route = createFileRoute("/_authenticated/plantillas")({
   head: () => ({ meta: [{ title: "Plantillas — Planeador" }, { name: "description", content: "Plantillas reutilizables de proyectos." }] }),
   component: TemplatesPage,
 });

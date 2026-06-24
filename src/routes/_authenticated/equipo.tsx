@@ -11,7 +11,7 @@ import { Plus, Trash2, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { useProductivity, type Member } from "@/lib/productivity-store";
 
-export const Route = createFileRoute("/equipo")({
+export const Route = createFileRoute("/_authenticated/equipo")({
   head: () => ({ meta: [{ title: "Equipo — Planeador" }, { name: "description", content: "Gestión de miembros y permisos." }] }),
   component: TeamPage,
 });
