@@ -8,8 +8,9 @@ export interface TimeEntry { id: string; taskId?: string; taskName: string; proj
 export interface ActiveTimer { taskName: string; project: string; startedAt: number; pausedAt?: number; accumulated: number; }
 export interface WeeklyReview { id: string; weekStart: string; good: string; improve: string; score: number; completedCount: number; }
 export interface Member { id: string; name: string; email: string; role: "admin" | "editor" | "viewer"; permissions: string[]; }
-export interface MeetingAgreement { id: string; text: string; assignee?: string; convertedTaskId?: string; }
-export interface Meeting { id: string; title: string; date: string; agenda: string; minutes: string; agreements: MeetingAgreement[]; }
+export interface MeetingAgreement { id: string; text: string; assignee?: string; convertedTaskId?: string; done?: boolean; }
+export interface Meeting { id: string; title: string; date: string; agenda: string; minutes: string; agreements: MeetingAgreement[]; completed?: boolean; archivedAt?: string; }
+export interface AutoStateRule { id: string; name: string; trigger: "overdue" | "all_subtasks_done" | "time_logged"; action: "set_in_progress" | "set_completed" | "notify"; enabled: boolean; }
 export interface RoadmapItem { id: string; name: string; quarter: string; year: number; progress: number; status: "planeado" | "en_curso" | "completado" | "bloqueado"; }
 export interface SprintTask { id: string; name: string; estimate: number; done: boolean; }
 export interface Sprint { id: string; name: string; startDate: string; endDate: string; active: boolean; closed: boolean; tasks: SprintTask[]; backlog: SprintTask[]; retro?: { good: string; bad: string; actions: string }; }
