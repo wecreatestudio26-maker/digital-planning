@@ -204,6 +204,7 @@ export const useProductivity = create<State>()(
       autoStates: { subtaskToParent: true, overdueAuto: true, hoursToProgress: true },
       changeLog: [],
       rules: seedRules(),
+      autoRules: [],
       estimates: [],
 
       toggleHabit: (id, date) => set((s) => ({
