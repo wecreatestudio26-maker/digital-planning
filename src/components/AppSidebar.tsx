@@ -1,8 +1,8 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet,
-  Repeat, Timer, ClipboardCheck, Focus, Scale, TrendingUp, BellRing,
-  Users, Gauge, Mic, Map, Zap, FileStack, Bell, Settings2, Workflow,
+  Repeat, Timer, ClipboardCheck, Focus,
+  Users, Gauge, Mic, FileStack, Bell, Settings2, Workflow,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -26,19 +26,12 @@ const groups = [
     { title: "Evaluación", url: "/evaluacion", icon: ClipboardCheck },
     { title: "Enfoque", url: "/enfoque", icon: Focus },
   ]},
-  { label: "Seguimiento", items: [
-    { title: "Estimado vs Real", url: "/estimado-vs-real", icon: Scale },
-    { title: "Velocidad", url: "/velocidad", icon: TrendingUp },
-    { title: "Alertas", url: "/alertas", icon: BellRing },
-  ]},
   { label: "Colaboración", items: [
     { title: "Equipo", url: "/equipo", icon: Users },
     { title: "Carga", url: "/carga", icon: Gauge },
     { title: "Reuniones", url: "/reuniones", icon: Mic },
   ]},
   { label: "Planificación", items: [
-    { title: "Roadmap", url: "/roadmap", icon: Map },
-    { title: "Sprints", url: "/sprints", icon: Zap },
     { title: "Plantillas", url: "/plantillas", icon: FileStack },
   ]},
   { label: "Automatización", items: [
