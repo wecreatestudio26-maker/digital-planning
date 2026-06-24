@@ -55,7 +55,11 @@ interface State {
   updateMeeting: (id: string, p: Partial<Meeting>) => void;
   removeMeeting: (id: string) => void;
   addAgreement: (mid: string, text: string) => void;
+  toggleAgreementDone: (mid: string, aid: string) => void;
+  removeAgreement: (mid: string, aid: string) => void;
   convertAgreement: (mid: string, aid: string, taskId: string) => void;
+  completeMeeting: (mid: string) => void;
+  reopenMeeting: (mid: string) => void;
   addRoadmap: (r: Omit<RoadmapItem, "id">) => void;
   updateRoadmap: (id: string, p: Partial<RoadmapItem>) => void;
   removeRoadmap: (id: string) => void;
