@@ -10,7 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -28,6 +28,7 @@ import { Route as AuthenticatedGanttRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedEvaluacionRouteImport } from './routes/_authenticated/evaluacion'
 import { Route as AuthenticatedEquipoRouteImport } from './routes/_authenticated/equipo'
 import { Route as AuthenticatedEnfoqueRouteImport } from './routes/_authenticated/enfoque'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCargaRouteImport } from './routes/_authenticated/carga'
 import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
 import { Route as AuthenticatedAutoEstadosRouteImport } from './routes/_authenticated/auto-estados'
@@ -37,10 +38,10 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
+const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
@@ -129,6 +130,11 @@ const AuthenticatedEnfoqueRoute = AuthenticatedEnfoqueRouteImport.update({
   path: '/enfoque',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCargaRoute = AuthenticatedCargaRouteImport.update({
   id: '/carga',
   path: '/carga',
@@ -153,11 +159,12 @@ const AuthenticatedActividadesRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof IndexRoute
   '/actividades': typeof AuthenticatedActividadesRoute
   '/auto-estados': typeof AuthenticatedAutoEstadosRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/carga': typeof AuthenticatedCargaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/enfoque': typeof AuthenticatedEnfoqueRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/evaluacion': typeof AuthenticatedEvaluacionRoute
@@ -177,10 +184,12 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/actividades': typeof AuthenticatedActividadesRoute
   '/auto-estados': typeof AuthenticatedAutoEstadosRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/carga': typeof AuthenticatedCargaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/enfoque': typeof AuthenticatedEnfoqueRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/evaluacion': typeof AuthenticatedEvaluacionRoute
@@ -198,15 +207,16 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/_authenticated/actividades': typeof AuthenticatedActividadesRoute
   '/_authenticated/auto-estados': typeof AuthenticatedAutoEstadosRoute
   '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
   '/_authenticated/carga': typeof AuthenticatedCargaRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/enfoque': typeof AuthenticatedEnfoqueRoute
   '/_authenticated/equipo': typeof AuthenticatedEquipoRoute
   '/_authenticated/evaluacion': typeof AuthenticatedEvaluacionRoute
@@ -224,7 +234,6 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -234,6 +243,7 @@ export interface FileRouteTypes {
     | '/auto-estados'
     | '/calendario'
     | '/carga'
+    | '/dashboard'
     | '/enfoque'
     | '/equipo'
     | '/evaluacion'
@@ -253,10 +263,12 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/actividades'
     | '/auto-estados'
     | '/calendario'
     | '/carga'
+    | '/dashboard'
     | '/enfoque'
     | '/equipo'
     | '/evaluacion'
@@ -274,14 +286,15 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
-    | '/'
   id:
     | '__root__'
+    | '/'
     | '/_authenticated'
     | '/_authenticated/actividades'
     | '/_authenticated/auto-estados'
     | '/_authenticated/calendario'
     | '/_authenticated/carga'
+    | '/_authenticated/dashboard'
     | '/_authenticated/enfoque'
     | '/_authenticated/equipo'
     | '/_authenticated/evaluacion'
@@ -299,10 +312,10 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
-    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthCheckEmailRoute: typeof AuthCheckEmailRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
@@ -320,12 +333,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/': {
-      id: '/_authenticated/'
+    '/': {
+      id: '/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/auth/reset-password': {
       id: '/auth/reset-password'
@@ -446,6 +459,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEnfoqueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/carga': {
       id: '/_authenticated/carga'
       path: '/carga'
@@ -482,6 +502,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAutoEstadosRoute: typeof AuthenticatedAutoEstadosRoute
   AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
   AuthenticatedCargaRoute: typeof AuthenticatedCargaRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEnfoqueRoute: typeof AuthenticatedEnfoqueRoute
   AuthenticatedEquipoRoute: typeof AuthenticatedEquipoRoute
   AuthenticatedEvaluacionRoute: typeof AuthenticatedEvaluacionRoute
@@ -494,7 +515,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReunionesRoute: typeof AuthenticatedReunionesRoute
   AuthenticatedRiesgosRoute: typeof AuthenticatedRiesgosRoute
   AuthenticatedTiempoRoute: typeof AuthenticatedTiempoRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -502,6 +522,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAutoEstadosRoute: AuthenticatedAutoEstadosRoute,
   AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
   AuthenticatedCargaRoute: AuthenticatedCargaRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEnfoqueRoute: AuthenticatedEnfoqueRoute,
   AuthenticatedEquipoRoute: AuthenticatedEquipoRoute,
   AuthenticatedEvaluacionRoute: AuthenticatedEvaluacionRoute,
@@ -514,13 +535,13 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReunionesRoute: AuthenticatedReunionesRoute,
   AuthenticatedRiesgosRoute: AuthenticatedRiesgosRoute,
   AuthenticatedTiempoRoute: AuthenticatedTiempoRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthCheckEmailRoute: AuthCheckEmailRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,

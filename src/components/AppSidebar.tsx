@@ -11,7 +11,7 @@ import {
 
 const groups = [
   { label: "General", items: [
-    { title: "Dashboard", url: "/", icon: LayoutDashboard },
+    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
     { title: "Calendario", url: "/calendario", icon: Calendar },
     { title: "Actividades", url: "/actividades", icon: ListTodo },
   ]},

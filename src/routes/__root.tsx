@@ -98,8 +98,9 @@ function RootLayout() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const focusMode = pathname.startsWith("/enfoque");
   const isAuthRoute = pathname.startsWith("/auth");
+  const isLanding = pathname === "/";
 
-  if (isAuthRoute) {
+  if (isAuthRoute || isLanding) {
     return (
       <>
         <Outlet />
