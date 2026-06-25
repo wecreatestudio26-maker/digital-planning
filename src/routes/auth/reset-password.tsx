@@ -30,7 +30,7 @@ function ResetPage() {
       toast.error(translateAuthError(error));
     } else {
       toast.success("Contraseña actualizada");
-      navigate({ to: "/" });
+      navigate({ to: "/dashboard" });
     }
   }
 

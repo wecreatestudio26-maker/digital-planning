@@ -30,7 +30,7 @@ function LoginPage() {
     const { error } = await signIn(email, password);
     setLoading(false);
     if (error) toast.error(translateAuthError(error));
-    else navigate({ to: "/" });
+    else navigate({ to: "/dashboard" });
   }
 
   async function onGoogle() {

@@ -10,7 +10,6 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
-import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
 import { Route as AuthResetPasswordRouteImport } from './routes/auth/reset-password'
 import { Route as AuthRegisterRouteImport } from './routes/auth/register'
 import { Route as AuthLoginRouteImport } from './routes/auth/login'
@@ -28,6 +27,7 @@ import { Route as AuthenticatedGanttRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedEvaluacionRouteImport } from './routes/_authenticated/evaluacion'
 import { Route as AuthenticatedEquipoRouteImport } from './routes/_authenticated/equipo'
 import { Route as AuthenticatedEnfoqueRouteImport } from './routes/_authenticated/enfoque'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCargaRouteImport } from './routes/_authenticated/carga'
 import { Route as AuthenticatedCalendarioRouteImport } from './routes/_authenticated/calendario'
 import { Route as AuthenticatedAutoEstadosRouteImport } from './routes/_authenticated/auto-estados'
@@ -36,11 +36,6 @@ import { Route as AuthenticatedActividadesRouteImport } from './routes/_authenti
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
   id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
-} as any)
-const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthResetPasswordRoute = AuthResetPasswordRouteImport.update({
   id: '/auth/reset-password',
@@ -129,6 +124,11 @@ const AuthenticatedEnfoqueRoute = AuthenticatedEnfoqueRouteImport.update({
   path: '/enfoque',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedCargaRoute = AuthenticatedCargaRouteImport.update({
   id: '/carga',
   path: '/carga',
@@ -153,11 +153,12 @@ const AuthenticatedActividadesRoute =
   } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof AuthenticatedIndexRoute
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/actividades': typeof AuthenticatedActividadesRoute
   '/auto-estados': typeof AuthenticatedAutoEstadosRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/carga': typeof AuthenticatedCargaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/enfoque': typeof AuthenticatedEnfoqueRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/evaluacion': typeof AuthenticatedEvaluacionRoute
@@ -177,10 +178,12 @@ export interface FileRoutesByFullPath {
   '/auth/reset-password': typeof AuthResetPasswordRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof AuthenticatedRouteRouteWithChildren
   '/actividades': typeof AuthenticatedActividadesRoute
   '/auto-estados': typeof AuthenticatedAutoEstadosRoute
   '/calendario': typeof AuthenticatedCalendarioRoute
   '/carga': typeof AuthenticatedCargaRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/enfoque': typeof AuthenticatedEnfoqueRoute
   '/equipo': typeof AuthenticatedEquipoRoute
   '/evaluacion': typeof AuthenticatedEvaluacionRoute
@@ -198,7 +201,6 @@ export interface FileRoutesByTo {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/': typeof AuthenticatedIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -207,6 +209,7 @@ export interface FileRoutesById {
   '/_authenticated/auto-estados': typeof AuthenticatedAutoEstadosRoute
   '/_authenticated/calendario': typeof AuthenticatedCalendarioRoute
   '/_authenticated/carga': typeof AuthenticatedCargaRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/enfoque': typeof AuthenticatedEnfoqueRoute
   '/_authenticated/equipo': typeof AuthenticatedEquipoRoute
   '/_authenticated/evaluacion': typeof AuthenticatedEvaluacionRoute
@@ -224,7 +227,6 @@ export interface FileRoutesById {
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
   '/auth/reset-password': typeof AuthResetPasswordRoute
-  '/_authenticated/': typeof AuthenticatedIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -234,6 +236,7 @@ export interface FileRouteTypes {
     | '/auto-estados'
     | '/calendario'
     | '/carga'
+    | '/dashboard'
     | '/enfoque'
     | '/equipo'
     | '/evaluacion'
@@ -253,10 +256,12 @@ export interface FileRouteTypes {
     | '/auth/reset-password'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/'
     | '/actividades'
     | '/auto-estados'
     | '/calendario'
     | '/carga'
+    | '/dashboard'
     | '/enfoque'
     | '/equipo'
     | '/evaluacion'
@@ -274,7 +279,6 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
-    | '/'
   id:
     | '__root__'
     | '/_authenticated'
@@ -282,6 +286,7 @@ export interface FileRouteTypes {
     | '/_authenticated/auto-estados'
     | '/_authenticated/calendario'
     | '/_authenticated/carga'
+    | '/_authenticated/dashboard'
     | '/_authenticated/enfoque'
     | '/_authenticated/equipo'
     | '/_authenticated/evaluacion'
@@ -299,7 +304,6 @@ export interface FileRouteTypes {
     | '/auth/login'
     | '/auth/register'
     | '/auth/reset-password'
-    | '/_authenticated/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -319,13 +323,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/_authenticated/': {
-      id: '/_authenticated/'
-      path: '/'
-      fullPath: '/'
-      preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
     }
     '/auth/reset-password': {
       id: '/auth/reset-password'
@@ -446,6 +443,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEnfoqueRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/carga': {
       id: '/_authenticated/carga'
       path: '/carga'
@@ -482,6 +486,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAutoEstadosRoute: typeof AuthenticatedAutoEstadosRoute
   AuthenticatedCalendarioRoute: typeof AuthenticatedCalendarioRoute
   AuthenticatedCargaRoute: typeof AuthenticatedCargaRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEnfoqueRoute: typeof AuthenticatedEnfoqueRoute
   AuthenticatedEquipoRoute: typeof AuthenticatedEquipoRoute
   AuthenticatedEvaluacionRoute: typeof AuthenticatedEvaluacionRoute
@@ -494,7 +499,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReunionesRoute: typeof AuthenticatedReunionesRoute
   AuthenticatedRiesgosRoute: typeof AuthenticatedRiesgosRoute
   AuthenticatedTiempoRoute: typeof AuthenticatedTiempoRoute
-  AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -502,6 +506,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAutoEstadosRoute: AuthenticatedAutoEstadosRoute,
   AuthenticatedCalendarioRoute: AuthenticatedCalendarioRoute,
   AuthenticatedCargaRoute: AuthenticatedCargaRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEnfoqueRoute: AuthenticatedEnfoqueRoute,
   AuthenticatedEquipoRoute: AuthenticatedEquipoRoute,
   AuthenticatedEvaluacionRoute: AuthenticatedEvaluacionRoute,
@@ -514,7 +519,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReunionesRoute: AuthenticatedReunionesRoute,
   AuthenticatedRiesgosRoute: AuthenticatedRiesgosRoute,
   AuthenticatedTiempoRoute: AuthenticatedTiempoRoute,
-  AuthenticatedIndexRoute: AuthenticatedIndexRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -531,13 +535,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
