@@ -46,8 +46,11 @@ export type Database = {
           expires_at: string
           id: string
           invited_by: string | null
+          name: string | null
           org_id: string
+          permissions: Json
           role: Database["public"]["Enums"]["org_role"]
+          status: string
           token: string
         }
         Insert: {
@@ -57,8 +60,11 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string | null
+          name?: string | null
           org_id: string
+          permissions?: Json
           role?: Database["public"]["Enums"]["org_role"]
+          status?: string
           token?: string
         }
         Update: {
@@ -68,8 +74,11 @@ export type Database = {
           expires_at?: string
           id?: string
           invited_by?: string | null
+          name?: string | null
           org_id?: string
+          permissions?: Json
           role?: Database["public"]["Enums"]["org_role"]
+          status?: string
           token?: string
         }
         Relationships: [
@@ -89,6 +98,7 @@ export type Database = {
           invited_by: string | null
           is_owner: boolean
           org_id: string
+          permissions: Json
           role: Database["public"]["Enums"]["org_role"]
           user_id: string
         }
@@ -98,6 +108,7 @@ export type Database = {
           invited_by?: string | null
           is_owner?: boolean
           org_id: string
+          permissions?: Json
           role?: Database["public"]["Enums"]["org_role"]
           user_id: string
         }
@@ -107,6 +118,7 @@ export type Database = {
           invited_by?: string | null
           is_owner?: boolean
           org_id?: string
+          permissions?: Json
           role?: Database["public"]["Enums"]["org_role"]
           user_id?: string
         }
@@ -221,6 +233,19 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      accept_org_invite: { Args: { _token: string }; Returns: string }
+      get_invite_public: {
+        Args: { _token: string }
+        Returns: {
+          email: string
+          expired: boolean
+          expires_at: string
+          name: string
+          org_name: string
+          role: Database["public"]["Enums"]["org_role"]
+          status: string
+        }[]
+      }
       has_org_role: {
         Args: {
           _org: string

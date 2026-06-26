@@ -14,12 +14,14 @@ import { Plus, Trash2, Mail, Crown, ArrowRightLeft } from "lucide-react";
 import { toast } from "sonner";
 import {
   listMembers, listInvites, inviteMember, updateMemberRole,
-  removeMember, transferOwnership,
+  removeMember, revokeInvite, transferOwnership,
 } from "@/lib/org.functions";
 import { useOrgRole } from "@/hooks/useOrgRole";
 import {
-  ASSIGNABLE_ROLES, ROLE_BADGE_CLASS, ROLE_LABEL, type OrgRole,
+  ASSIGNABLE_ROLES, ROLE_BADGE_CLASS, ROLE_LABEL, MODULES,
+  type OrgRole, type ModulePermissions,
 } from "@/lib/permissions";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/equipo")({
   head: () => ({ meta: [{ title: "Equipo — Planeador" }] }),
@@ -34,6 +36,7 @@ function TeamPage() {
   const inviteFn = useServerFn(inviteMember);
   const updateRoleFn = useServerFn(updateMemberRole);
   const removeFn = useServerFn(removeMember);
+  const revokeFn = useServerFn(revokeInvite);
   const transferFn = useServerFn(transferOwnership);
 
   const membersQ = useQuery({ queryKey: ["org-members"], queryFn: () => fetchMembers() });
@@ -41,17 +44,24 @@ function TeamPage() {
 
   const [openInvite, setOpenInvite] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
-  const [form, setForm] = useState<{ email: string; role: OrgRole }>({ email: "", role: "EDITOR" });
+  const [form, setForm] = useState<{ name: string; email: string; role: OrgRole; permissions: ModulePermissions }>(
+    { name: "", email: "", role: "EDITOR", permissions: {} },
+  );
   const [transferTo, setTransferTo] = useState<string>("");
   const [confirmText, setConfirmText] = useState("");
 
   const assignable = org.role ? ASSIGNABLE_ROLES[org.role] : [];
 
   const inviteMut = useMutation({
-    mutationFn: (v: { email: string; role: OrgRole }) => inviteFn({ data: v }),
-    onSuccess: () => {
-      toast.success(`Invitación creada para ${form.email}`);
-      setForm({ email: "", role: "EDITOR" }); setOpenInvite(false);
+    mutationFn: (v: { name: string; email: string; role: OrgRole; permissions: ModulePermissions }) =>
+      inviteFn({ data: v }),
+    onSuccess: (res: any) => {
+      const msg = res?.emailResult?.skipped
+        ? `Invitación creada (email no enviado): ${res.url}`
+        : `Invitación enviada a ${form.email}`;
+      toast.success(msg);
+      setForm({ name: "", email: "", role: "EDITOR", permissions: {} });
+      setOpenInvite(false);
       qc.invalidateQueries({ queryKey: ["org-invites"] });
     },
     onError: (e: any) => toast.error(e?.message ?? "Error"),
@@ -68,6 +78,13 @@ function TeamPage() {
     onSuccess: () => { toast.success("Miembro eliminado"); qc.invalidateQueries({ queryKey: ["org-members"] }); },
     onError: (e: any) => toast.error(e?.message ?? "Error"),
   });
+
+  const revokeMut = useMutation({
+    mutationFn: (v: { inviteId: string }) => revokeFn({ data: v }),
+    onSuccess: () => { toast.success("Invitación revocada"); qc.invalidateQueries({ queryKey: ["org-invites"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Error"),
+  });
+
 
   const transferMut = useMutation({
     mutationFn: (v: { newOwnerUserId: string }) => transferFn({ data: v }),
@@ -99,11 +116,17 @@ function TeamPage() {
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4" /> Invitar miembro</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Invitar miembro</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <Label>Correo</Label>
+                  <Label>Nombre</Label>
+                  <Input value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Ej. María García" />
+                </div>
+                <div>
+                  <Label>Correo electrónico</Label>
                   <Input type="email" value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </div>
@@ -118,6 +141,42 @@ function TeamPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                {(form.role === "EDITOR" || form.role === "VIEWER") && (
+                  <div className="space-y-2">
+                    <Label>Permisos por módulo</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {form.role === "VIEWER"
+                        ? "Por defecto puede ver todo. Marca 'Editar' para permitir cambios."
+                        : "Por defecto puede ver y editar todo. Desmarca para restringir."}
+                    </p>
+                    <div className="border border-border rounded-md divide-y divide-border">
+                      <div className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 py-2 text-xs text-muted-foreground">
+                        <span>Módulo</span><span>Ver</span><span>Editar</span>
+                      </div>
+                      {MODULES.map((mod) => {
+                        const p = form.permissions[mod.key] ?? {};
+                        const defaultView = form.role === "EDITOR" ? true : true;
+                        const defaultEdit = form.role === "EDITOR" ? true : false;
+                        const viewVal = p.view ?? defaultView;
+                        const editVal = p.edit ?? defaultEdit;
+                        const setP = (next: { view?: boolean; edit?: boolean }) =>
+                          setForm({
+                            ...form,
+                            permissions: { ...form.permissions, [mod.key]: { ...p, ...next } },
+                          });
+                        return (
+                          <div key={mod.key} className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 py-2 items-center">
+                            <span className="text-sm">{mod.label}</span>
+                            <Checkbox checked={viewVal} onCheckedChange={(v) => setP({ view: v === true })} />
+                            <Checkbox checked={editVal}
+                              disabled={!viewVal}
+                              onCheckedChange={(v) => setP({ edit: v === true })} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpenInvite(false)}>Cancelar</Button>
@@ -125,7 +184,7 @@ function TeamPage() {
                   disabled={!form.email || inviteMut.isPending}
                   onClick={() => inviteMut.mutate(form)}
                 >
-                  <Mail className="h-4 w-4" /> Enviar
+                  <Mail className="h-4 w-4" /> Enviar invitación
                 </Button>
               </DialogFooter>
             </DialogContent>
@@ -203,9 +262,12 @@ function TeamPage() {
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <tbody>
-                {invitesQ.data!.map((i) => (
+                {invitesQ.data!.map((i: any) => (
                   <tr key={i.id} className="border-b border-border/50">
-                    <td className="p-3">{i.email}</td>
+                    <td className="p-3">
+                      <div className="font-medium">{i.name || i.email}</div>
+                      {i.name && <div className="text-xs text-muted-foreground">{i.email}</div>}
+                    </td>
                     <td>
                       <span className={`px-2 py-0.5 rounded text-xs border ${ROLE_BADGE_CLASS[i.role as OrgRole]}`}>
                         {ROLE_LABEL[i.role as OrgRole]}
@@ -213,6 +275,28 @@ function TeamPage() {
                     </td>
                     <td className="text-xs text-muted-foreground">
                       Expira {new Date(i.expires_at).toLocaleDateString()}
+                    </td>
+                    <td className="text-right pr-3">
+                      {org.can("invite") && (
+                        <>
+                          <Button variant="ghost" size="sm"
+                            onClick={() => {
+                              const url = `${window.location.origin}/invite/${i.token}`;
+                              navigator.clipboard.writeText(url);
+                              toast.success("Enlace copiado");
+                            }}
+                          >Copiar enlace</Button>
+                          <Button variant="ghost" size="icon"
+                            onClick={() => {
+                              if (confirm(`¿Revocar invitación para ${i.email}?`)) {
+                                revokeMut.mutate({ inviteId: i.id });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
