@@ -36,6 +36,7 @@ function TeamPage() {
   const inviteFn = useServerFn(inviteMember);
   const updateRoleFn = useServerFn(updateMemberRole);
   const removeFn = useServerFn(removeMember);
+  const revokeFn = useServerFn(revokeInvite);
   const transferFn = useServerFn(transferOwnership);
 
   const membersQ = useQuery({ queryKey: ["org-members"], queryFn: () => fetchMembers() });
@@ -43,17 +44,24 @@ function TeamPage() {
 
   const [openInvite, setOpenInvite] = useState(false);
   const [openTransfer, setOpenTransfer] = useState(false);
-  const [form, setForm] = useState<{ email: string; role: OrgRole }>({ email: "", role: "EDITOR" });
+  const [form, setForm] = useState<{ name: string; email: string; role: OrgRole; permissions: ModulePermissions }>(
+    { name: "", email: "", role: "EDITOR", permissions: {} },
+  );
   const [transferTo, setTransferTo] = useState<string>("");
   const [confirmText, setConfirmText] = useState("");
 
   const assignable = org.role ? ASSIGNABLE_ROLES[org.role] : [];
 
   const inviteMut = useMutation({
-    mutationFn: (v: { email: string; role: OrgRole }) => inviteFn({ data: v }),
-    onSuccess: () => {
-      toast.success(`Invitación creada para ${form.email}`);
-      setForm({ email: "", role: "EDITOR" }); setOpenInvite(false);
+    mutationFn: (v: { name: string; email: string; role: OrgRole; permissions: ModulePermissions }) =>
+      inviteFn({ data: v }),
+    onSuccess: (res: any) => {
+      const msg = res?.emailResult?.skipped
+        ? `Invitación creada (email no enviado): ${res.url}`
+        : `Invitación enviada a ${form.email}`;
+      toast.success(msg);
+      setForm({ name: "", email: "", role: "EDITOR", permissions: {} });
+      setOpenInvite(false);
       qc.invalidateQueries({ queryKey: ["org-invites"] });
     },
     onError: (e: any) => toast.error(e?.message ?? "Error"),
