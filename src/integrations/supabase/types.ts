@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      categories: {
+        Row: {
+          color: string
+          created_at: string
+          id: string
+          name: string
+          user_id: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          id?: string
+          name: string
+          user_id: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          id?: string
+          name?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -32,6 +56,36 @@ export type Database = {
           email?: string
           full_name?: string | null
           id?: string
+        }
+        Relationships: []
+      }
+      team_members: {
+        Row: {
+          avatar_color: string
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          role: string | null
+          user_id: string
+        }
+        Insert: {
+          avatar_color?: string
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          role?: string | null
+          user_id: string
+        }
+        Update: {
+          avatar_color?: string
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          role?: string | null
+          user_id?: string
         }
         Relationships: []
       }
