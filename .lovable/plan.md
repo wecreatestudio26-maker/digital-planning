@@ -1,65 +1,55 @@
-## Checklist de actualizaciones
+# Plan de mejoras (5 cambios)
 
-### GESTIÓN
+## 1. Volver a la portada desde el Dashboard
+- **Header** (`src/routes/__root.tsx`): convertir el logo/título "Digital Planning" en un `<Link to="/">` clicable.
+- **Sidebar** (`src/components/AppSidebar.tsx`): añadir al final un ítem **Portada** (icono `Home`) que enlaza a `/`.
 
-**1. Gantt — múltiples diagramas**
-- [ ] Añadir colección `ganttCharts` al store (id, nombre, lista de tareas)
-- [ ] Selector desplegable arriba para cambiar entre diagramas + botón "Nuevo diagrama" + renombrar/eliminar
-- [ ] Migrar tareas existentes a un diagrama "Principal"
-- [ ] Mejorar creación de tareas: campos "Tarea padre" (opcional, seleccionar existente o ninguna) y "Depende de" (opcional, multi-select de tareas del mismo diagrama)
-- [ ] Editar tareas tanto desde el cronograma (clic en barra) como desde la tabla de detalle (botón editar por fila)
-- [ ] Validar dependencias circulares al guardar
+## 2. Idioma global y persistente
+- Instalar `i18next` + `react-i18next` + `i18next-browser-languagedetector`.
+- Crear `src/i18n/index.ts` con 4 namespaces (ES/EN/FR/IT) y persistencia en `localStorage` (clave `app-lang`).
+- Mover el selector de idioma actual (portada) a un componente `LanguageSwitcher` reutilizable, montado en:
+  - Header de la portada (donde ya está).
+  - Header del layout autenticado.
+- Traducir: sidebar (todos los ítems del menú), header, dashboard, calendario (encabezados, botones Hoy/Anterior/Siguiente, vistas Mes/Semana), formulario de actividad (labels, placeholders, botones), portada (sustituye el `useState` actual por `useTranslation`).
+- Otras páginas (Gantt, Equipo, etc.) reciben solo el título traducido en esta iteración; el contenido interno queda para una pasada futura — lo dejaré documentado en `.lovable/plan.md`.
 
-**2. Riesgos — edición**
-- [ ] Botón editar por fila que abre el mismo diálogo de creación precargado
-- [ ] Permitir modificar probabilidad, impacto, mitigación, estado y recalcular nivel automáticamente
+## 3. Responsable visible en cada actividad del calendario
+- En `src/routes/_authenticated/calendario.tsx`, debajo del nombre de la actividad renderizar un mini-row: `Avatar` (iniciales del responsable, color derivado del hash del nombre) + nombre en `text-xs text-muted-foreground`.
+- Si no hay responsable asignado, no se muestra nada.
 
-**3. Presupuesto — rubros y subrubros**
-- [ ] Etiquetar campos planeado/real con prefijo "$" y validación numérica
-- [ ] Añadir sub-rubros por rubro (concepto + monto), el real del rubro = suma de subrubros
-- [ ] Cada rubro es expandible/colapsable (chevron) mostrando los subrubros
-- [ ] Editar rubro (nombre, planeado) y editar/eliminar subrubros
-- [ ] Alertas de sobrecosto se mantienen comparando planeado vs suma de subrubros
+## 4. Botón **Hoy** funcional
+- En el calendario, el botón Hoy debe:
+  1. Reposicionar el calendario en el mes/semana actual.
+  2. Hacer scroll suave hasta la celda del día actual.
+  3. Resaltar las actividades de hoy con un anillo/ring temporal (~2s).
+- Implementación: `setCurrentDate(new Date())` + `scrollIntoView` sobre `[data-date="YYYY-MM-DD"]`.
 
-**4. OKR — eliminar**
-- [ ] Borrar `src/routes/okr.tsx`, ítem del sidebar, claves del store y referencias en hábitos
+## 5. Categorías y responsables creables desde el formulario
+- **Backend** (migración Lovable Cloud):
+  - Tabla `categories(id, user_id, name, color, created_at)` — RLS por `user_id`, GRANTs estándar.
+  - Tabla `team_members(id, user_id, full_name, email, role, avatar_color, created_at)` — RLS por `user_id`.
+  - Trigger seed opcional: al primer login, sembrar categorías por defecto (Trabajo, Estudio, Reuniones, Proyecto).
+- **Server functions** (`src/lib/catalog.functions.ts`):
+  - `listCategories`, `createCategory`
+  - `listTeamMembers`, `createTeamMember`
+  - Todas con `requireSupabaseAuth`.
+- **Formulario** (`src/components/ActivityForm.tsx`):
+  - Reemplazar el `<Input>` de categoría por un `<Combobox>` (Command + Popover) con las categorías de la BD; opción "➕ Crear categoría…" abre un mini-modal (nombre + color).
+  - Reemplazar el `<Input>` de responsable por el mismo patrón con `team_members`; opción "➕ Añadir a Equipo…" crea miembro (nombre + email opcional).
+  - Tras crear, refrescar la lista con `queryClient.invalidateQueries` y autoseleccionarlo.
+- **Página Equipo**: pasará a leer/escribir desde `team_members` en una iteración futura (fuera de este plan para no expandirlo); por ahora el formulario crea miembros que aparecerán cuando esa página se migre.
 
-### COLABORACIÓN
+## Notas técnicas
+- Las actividades siguen en localStorage (zustand). Solo categorías y responsables se persisten en BD; las actividades almacenan el nombre como string (compat hacia atrás).
+- i18n inicializado del lado cliente; SSR seguirá renderizando en ES por defecto y se hidratará al idioma persistido (evita flicker con `suppressHydrationWarning` en `<html>`).
+- El bug de build previo ya quedó resuelto al alinear versiones de `@tanstack/react-router` y `@tanstack/react-start`.
 
-**5. Equipo — invitación por correo real (requiere Lovable Cloud)**
-- [ ] Activar Lovable Cloud
-- [ ] Tabla `profiles` + tabla `team_members` (role, permissions[]) + `user_roles` con enum admin/editor/viewer
-- [ ] Función `has_role` (security definer) y políticas RLS basadas en rol
-- [ ] Server function que invita por email vía Supabase Auth `inviteUserByEmail` (correo con link mágico)
-- [ ] Gate de rutas: admin edita todo, editor edita módulos habilitados, viewer solo lectura
-- [ ] UI de permisos refleja restricciones por rol
-
-**6. Reuniones — completar y archivar**
-- [ ] Checkbox por acuerdo (completado individual)
-- [ ] Botón "Marcar reunión completa" (sólo si todos los acuerdos están en check)
-- [ ] Pestañas "Activas" / "Archivadas" en la vista
-- [ ] Las archivadas siguen siendo editables y se pueden reactivar
-
-### PLANIFICACIÓN
-
-**7. Plantillas**
-- [ ] Botón mostrar/ocultar tareas por plantilla (colapsar lista)
-- [ ] Editar plantilla después de creada (nombre, tareas, días)
-- [ ] Etiqueta clara "Duración (días)" junto al campo de tareas
-
-### AUTOMATIZACIÓN
-
-**8. Auto-estados — CRUD de reglas**
-- [ ] Permitir crear reglas personalizadas (no solo los 3 toggles fijos)
-- [ ] Editar y eliminar reglas existentes
-- [ ] Mantener log de cambios
-
-**9. Reglas — editar y eliminar**
-- [ ] Botón editar (abre diálogo precargado) además del eliminar existente
-
----
-
-### Notas técnicas
-- Cloud sólo se activa para el módulo Equipo (auth e invitaciones reales). El resto sigue en `localStorage`.
-- Cambios son grandes; los implementaré en este orden: OKR eliminado → Gantt → Riesgos → Presupuesto → Plantillas → Auto-estados/Reglas → Reuniones → Equipo (Cloud al final por ser el más invasivo).
-- Confirma para proceder, o dime si quieres reordenar/recortar.
+## Archivos principales a tocar
+- `src/routes/__root.tsx`, `src/components/AppSidebar.tsx`
+- `src/routes/index.tsx` (portada)
+- `src/i18n/index.ts` (nuevo) + `src/i18n/locales/{es,en,fr,it}.json`
+- `src/components/LanguageSwitcher.tsx` (nuevo)
+- `src/routes/_authenticated/calendario.tsx`
+- `src/components/ActivityForm.tsx`
+- `src/lib/catalog.functions.ts` (nuevo)
+- Migración SQL: `categories` + `team_members`
