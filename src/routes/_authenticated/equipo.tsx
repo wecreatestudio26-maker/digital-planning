@@ -79,6 +79,13 @@ function TeamPage() {
     onError: (e: any) => toast.error(e?.message ?? "Error"),
   });
 
+  const revokeMut = useMutation({
+    mutationFn: (v: { inviteId: string }) => revokeFn({ data: v }),
+    onSuccess: () => { toast.success("Invitación revocada"); qc.invalidateQueries({ queryKey: ["org-invites"] }); },
+    onError: (e: any) => toast.error(e?.message ?? "Error"),
+  });
+
+
   const transferMut = useMutation({
     mutationFn: (v: { newOwnerUserId: string }) => transferFn({ data: v }),
     onSuccess: () => {
