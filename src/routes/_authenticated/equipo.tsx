@@ -255,9 +255,12 @@ function TeamPage() {
           <CardContent className="p-0">
             <table className="w-full text-sm">
               <tbody>
-                {invitesQ.data!.map((i) => (
+                {invitesQ.data!.map((i: any) => (
                   <tr key={i.id} className="border-b border-border/50">
-                    <td className="p-3">{i.email}</td>
+                    <td className="p-3">
+                      <div className="font-medium">{i.name || i.email}</div>
+                      {i.name && <div className="text-xs text-muted-foreground">{i.email}</div>}
+                    </td>
                     <td>
                       <span className={`px-2 py-0.5 rounded text-xs border ${ROLE_BADGE_CLASS[i.role as OrgRole]}`}>
                         {ROLE_LABEL[i.role as OrgRole]}
@@ -265,6 +268,28 @@ function TeamPage() {
                     </td>
                     <td className="text-xs text-muted-foreground">
                       Expira {new Date(i.expires_at).toLocaleDateString()}
+                    </td>
+                    <td className="text-right pr-3">
+                      {org.can("invite") && (
+                        <>
+                          <Button variant="ghost" size="sm"
+                            onClick={() => {
+                              const url = `${window.location.origin}/invite/${i.token}`;
+                              navigator.clipboard.writeText(url);
+                              toast.success("Enlace copiado");
+                            }}
+                          >Copiar enlace</Button>
+                          <Button variant="ghost" size="icon"
+                            onClick={() => {
+                              if (confirm(`¿Revocar invitación para ${i.email}?`)) {
+                                revokeMut.mutate({ inviteId: i.id });
+                              }
+                            }}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
                     </td>
                   </tr>
                 ))}
