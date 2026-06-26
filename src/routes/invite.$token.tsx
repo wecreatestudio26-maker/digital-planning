@@ -71,7 +71,7 @@ function InvitePage() {
         password,
         options: { data: { full_name: invite.name ?? undefined } },
       });
-      if (error) throw new Error(translateAuthError(error));
+      if (error) throw new Error(translateAuthError(error.message));
       // Try immediate sign-in (in case email confirmation is disabled)
       await supabase.auth.signInWithPassword({ email: invite.email, password });
       // Wait briefly for session
