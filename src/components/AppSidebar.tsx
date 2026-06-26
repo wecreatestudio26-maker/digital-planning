@@ -1,73 +1,75 @@
 import { Link, useRouterState } from "@tanstack/react-router";
+import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet,
   Repeat, Timer, ClipboardCheck, Focus,
-  Users, Gauge, Mic, FileStack, Bell, Settings2, Workflow,
+  Users, Gauge, Mic, FileStack, Bell, Settings2, Workflow, Home,
 } from "lucide-react";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+  Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
 const groups = [
-  { label: "General", items: [
-    { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-    { title: "Calendario", url: "/calendario", icon: Calendar },
-    { title: "Actividades", url: "/actividades", icon: ListTodo },
+  { labelKey: "sidebar.general", items: [
+    { titleKey: "sidebar.dashboard", url: "/dashboard", icon: LayoutDashboard },
+    { titleKey: "sidebar.calendar", url: "/calendario", icon: Calendar },
+    { titleKey: "sidebar.activities", url: "/actividades", icon: ListTodo },
   ]},
-  { label: "Gestión", items: [
-    { title: "Gantt", url: "/gantt", icon: GanttChartSquare },
-    { title: "Riesgos", url: "/riesgos", icon: ShieldAlert },
-    { title: "Presupuesto", url: "/presupuesto", icon: Wallet },
+  { labelKey: "sidebar.management", items: [
+    { titleKey: "sidebar.gantt", url: "/gantt", icon: GanttChartSquare },
+    { titleKey: "sidebar.risks", url: "/riesgos", icon: ShieldAlert },
+    { titleKey: "sidebar.budget", url: "/presupuesto", icon: Wallet },
   ]},
-  { label: "Productividad", items: [
-    { title: "Hábitos", url: "/habitos", icon: Repeat },
-    { title: "Tiempo", url: "/tiempo", icon: Timer },
-    { title: "Evaluación", url: "/evaluacion", icon: ClipboardCheck },
-    { title: "Enfoque", url: "/enfoque", icon: Focus },
+  { labelKey: "sidebar.productivity", items: [
+    { titleKey: "sidebar.habits", url: "/habitos", icon: Repeat },
+    { titleKey: "sidebar.time", url: "/tiempo", icon: Timer },
+    { titleKey: "sidebar.evaluation", url: "/evaluacion", icon: ClipboardCheck },
+    { titleKey: "sidebar.focus", url: "/enfoque", icon: Focus },
   ]},
-  { label: "Colaboración", items: [
-    { title: "Equipo", url: "/equipo", icon: Users },
-    { title: "Carga", url: "/carga", icon: Gauge },
-    { title: "Reuniones", url: "/reuniones", icon: Mic },
+  { labelKey: "sidebar.collaboration", items: [
+    { titleKey: "sidebar.team", url: "/equipo", icon: Users },
+    { titleKey: "sidebar.load", url: "/carga", icon: Gauge },
+    { titleKey: "sidebar.meetings", url: "/reuniones", icon: Mic },
   ]},
-  { label: "Planificación", items: [
-    { title: "Plantillas", url: "/plantillas", icon: FileStack },
+  { labelKey: "sidebar.planning", items: [
+    { titleKey: "sidebar.templates", url: "/plantillas", icon: FileStack },
   ]},
-  { label: "Automatización", items: [
-    { title: "Recordatorios", url: "/recordatorios", icon: Bell },
-    { title: "Auto-estados", url: "/auto-estados", icon: Settings2 },
-    { title: "Reglas", url: "/reglas", icon: Workflow },
+  { labelKey: "sidebar.automation", items: [
+    { titleKey: "sidebar.reminders", url: "/recordatorios", icon: Bell },
+    { titleKey: "sidebar.autostates", url: "/auto-estados", icon: Settings2 },
+    { titleKey: "sidebar.rules", url: "/reglas", icon: Workflow },
   ]},
 ];
 
 export function AppSidebar() {
+  const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
-        <div className="flex items-center gap-2 px-2 py-3">
+        <Link to="/" className="flex items-center gap-2 px-2 py-3 hover:opacity-80 transition-opacity" aria-label={t("common.home")}>
           <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-primary-foreground">
             <CalendarCheck2 className="h-4 w-4" />
           </div>
           <div className="flex flex-col group-data-[collapsible=icon]:hidden">
             <span className="text-sm font-semibold leading-none">Planeador</span>
-            <span className="text-xs text-muted-foreground">de Actividades</span>
+            <span className="text-xs text-muted-foreground">{t("sidebar.activities")}</span>
           </div>
-        </div>
+        </Link>
       </SidebarHeader>
       <SidebarContent>
         {groups.map((g) => (
-          <SidebarGroup key={g.label}>
-            <SidebarGroupLabel>{g.label}</SidebarGroupLabel>
+          <SidebarGroup key={g.labelKey}>
+            <SidebarGroupLabel>{t(g.labelKey)}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {g.items.map((item) => (
                   <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={item.title}>
+                    <SidebarMenuButton asChild isActive={pathname === item.url} tooltip={t(item.titleKey)}>
                       <Link to={item.url}>
                         <item.icon />
-                        <span>{item.title}</span>
+                        <span>{t(item.titleKey)}</span>
                       </Link>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -77,6 +79,18 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild tooltip={t("sidebar.home")}>
+              <Link to="/">
+                <Home />
+                <span>{t("sidebar.home")}</span>
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   );
 }
