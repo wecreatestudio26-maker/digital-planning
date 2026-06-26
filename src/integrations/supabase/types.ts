@@ -38,6 +38,54 @@ export type Database = {
         }
         Relationships: []
       }
+      gumroad_licenses: {
+        Row: {
+          created_at: string
+          email: string | null
+          id: string
+          license_key: string
+          product_id: string | null
+          product_permalink: string | null
+          purchase_id: string | null
+          raw: Json | null
+          redeemed_at: string | null
+          sale_id: string | null
+          updated_at: string
+          user_id: string | null
+          uses: number
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          license_key: string
+          product_id?: string | null
+          product_permalink?: string | null
+          purchase_id?: string | null
+          raw?: Json | null
+          redeemed_at?: string | null
+          sale_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          uses?: number
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          id?: string
+          license_key?: string
+          product_id?: string | null
+          product_permalink?: string | null
+          purchase_id?: string | null
+          raw?: Json | null
+          redeemed_at?: string | null
+          sale_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+          uses?: number
+        }
+        Relationships: []
+      }
       organization_invites: {
         Row: {
           accepted_at: string | null
