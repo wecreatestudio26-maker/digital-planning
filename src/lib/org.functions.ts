@@ -34,18 +34,25 @@ export const listMembers = createServerFn({ method: "GET" })
     if (!me) return [];
     const { data, error } = await supabase
       .from("organization_members")
-      .select("id, user_id, role, is_owner, created_at, profiles:user_id(email, full_name)")
+      .select("id, user_id, role, is_owner, created_at")
       .eq("org_id", me.org_id)
       .order("is_owner", { ascending: false })
       .order("created_at", { ascending: true });
     if (error) throw new Error(error.message);
-    return (data ?? []).map((m: any) => ({
+    const userIds = (data ?? []).map((m) => m.user_id);
+    const profileMap = new Map<string, { email: string | null; full_name: string | null }>();
+    if (userIds.length) {
+      const { data: profs } = await supabase
+        .from("profiles").select("id, email, full_name").in("id", userIds);
+      (profs ?? []).forEach((p: any) => profileMap.set(p.id, { email: p.email, full_name: p.full_name }));
+    }
+    return (data ?? []).map((m) => ({
       id: m.id,
       userId: m.user_id,
       role: m.role as OrgRole,
       isOwner: m.is_owner,
-      email: m.profiles?.email ?? null,
-      fullName: m.profiles?.full_name ?? null,
+      email: profileMap.get(m.user_id)?.email ?? null,
+      fullName: profileMap.get(m.user_id)?.full_name ?? null,
       createdAt: m.created_at,
     }));
   });
