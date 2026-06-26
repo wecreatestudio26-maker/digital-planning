@@ -21,12 +21,6 @@ const groups = [
     { titleKey: "sidebar.risks", url: "/riesgos", icon: ShieldAlert },
     { titleKey: "sidebar.budget", url: "/presupuesto", icon: Wallet },
   ]},
-  { labelKey: "sidebar.productivity", items: [
-    { titleKey: "sidebar.habits", url: "/habitos", icon: Repeat },
-    { titleKey: "sidebar.time", url: "/tiempo", icon: Timer },
-    { titleKey: "sidebar.evaluation", url: "/evaluacion", icon: ClipboardCheck },
-    { titleKey: "sidebar.focus", url: "/enfoque", icon: Focus },
-  ]},
   { labelKey: "sidebar.collaboration", items: [
     { titleKey: "sidebar.team", url: "/equipo", icon: Users },
     { titleKey: "sidebar.load", url: "/carga", icon: Gauge },
