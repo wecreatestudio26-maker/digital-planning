@@ -14,12 +14,14 @@ import { Plus, Trash2, Mail, Crown, ArrowRightLeft } from "lucide-react";
 import { toast } from "sonner";
 import {
   listMembers, listInvites, inviteMember, updateMemberRole,
-  removeMember, transferOwnership,
+  removeMember, revokeInvite, transferOwnership,
 } from "@/lib/org.functions";
 import { useOrgRole } from "@/hooks/useOrgRole";
 import {
-  ASSIGNABLE_ROLES, ROLE_BADGE_CLASS, ROLE_LABEL, type OrgRole,
+  ASSIGNABLE_ROLES, ROLE_BADGE_CLASS, ROLE_LABEL, MODULES,
+  type OrgRole, type ModulePermissions,
 } from "@/lib/permissions";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export const Route = createFileRoute("/_authenticated/equipo")({
   head: () => ({ meta: [{ title: "Equipo — Planeador" }] }),
