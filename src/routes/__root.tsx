@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   Outlet,
+  Link,
   createRootRouteWithContext,
   useRouter,
   useRouterState,
@@ -10,13 +11,16 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { LogOut } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
 import appCss from "../styles.css?url";
+import "@/i18n";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
@@ -73,7 +77,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="es">
+    <html lang="es" suppressHydrationWarning>
       <head><HeadContent /></head>
       <body>
         {children}
@@ -95,6 +99,7 @@ function RootComponent() {
 }
 
 function RootLayout() {
+  const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const focusMode = pathname.startsWith("/enfoque");
   const isAuthRoute = pathname.startsWith("/auth");
@@ -125,8 +130,11 @@ function RootLayout() {
         <div className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center gap-3 border-b border-border px-4 sticky top-0 bg-background/80 backdrop-blur z-10">
             <SidebarTrigger />
-            <h1 className="text-sm font-medium text-muted-foreground">Planeador de Actividades</h1>
-            <div className="ml-auto">
+            <Link to="/" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              {t("common.appName")}
+            </Link>
+            <div className="ml-auto flex items-center gap-2">
+              <LanguageSwitcher variant="compact" />
               <SignOutButton />
             </div>
           </header>
@@ -141,6 +149,7 @@ function RootLayout() {
 }
 
 function SignOutButton() {
+  const { t } = useTranslation();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   if (!user) return null;
@@ -154,8 +163,7 @@ function SignOutButton() {
       }}
     >
       <LogOut className="h-4 w-4 mr-2" />
-      <span className="hidden sm:inline">Salir</span>
+      <span className="hidden sm:inline">{t("common.signOut")}</span>
     </Button>
   );
 }
-
