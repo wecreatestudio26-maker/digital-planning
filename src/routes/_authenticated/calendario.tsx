@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   addDays, addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format,
   isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths,
 } from "date-fns";
-import { es } from "date-fns/locale";
+import { es, enUS, fr, it } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -29,11 +30,43 @@ const statusBar: Record<Status, string> = {
   completado: "bg-primary",
 };
 
+const LOCALE_MAP = { es, en: enUS, fr, it } as const;
+type LocaleKey = keyof typeof LOCALE_MAP;
+
+function initials(name: string) {
+  return name.trim().split(/\s+/).slice(0, 2).map((p) => p[0]?.toUpperCase() ?? "").join("");
+}
+function colorFor(name: string) {
+  let h = 0;
+  for (let i = 0; i < name.length; i++) h = (h * 31 + name.charCodeAt(i)) >>> 0;
+  return `hsl(${h % 360} 65% 55%)`;
+}
+
+function AssigneeBadge({ name }: { name: string }) {
+  if (!name) return null;
+  return (
+    <div className="flex items-center gap-1 text-[10px] text-muted-foreground truncate">
+      <span
+        className="inline-flex h-4 w-4 items-center justify-center rounded-full text-[8px] font-semibold text-white shrink-0"
+        style={{ backgroundColor: colorFor(name) }}
+        aria-hidden
+      >
+        {initials(name)}
+      </span>
+      <span className="truncate">{name}</span>
+    </div>
+  );
+}
+
 function CalendarPage() {
+  const { t, i18n } = useTranslation();
+  const locale = LOCALE_MAP[(i18n.resolvedLanguage as LocaleKey) ?? "es"] ?? es;
   const { activities, update } = useActivities();
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [cursor, setCursor] = useState(new Date());
   const [dragId, setDragId] = useState<string | null>(null);
+  const [pulseToday, setPulseToday] = useState(false);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   const activitiesOn = (day: Date) =>
     activities.filter((a) => {
@@ -63,36 +96,52 @@ function CalendarPage() {
     else setCursor((c) => addDays(c, dir));
   };
 
+  const goToday = () => {
+    setCursor(new Date());
+    setPulseToday(true);
+    requestAnimationFrame(() => {
+      const today = format(new Date(), "yyyy-MM-dd");
+      const cell = gridRef.current?.querySelector(`[data-date="${today}"]`);
+      cell?.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+    setTimeout(() => setPulseToday(false), 2000);
+  };
+
   const headerLabel = useMemo(() => {
-    if (view === "month") return format(cursor, "MMMM yyyy", { locale: es });
+    if (view === "month") return format(cursor, "MMMM yyyy", { locale });
     if (view === "week") {
       const start = startOfWeek(cursor, { weekStartsOn: 1 });
       const end = endOfWeek(cursor, { weekStartsOn: 1 });
-      return `${format(start, "dd MMM", { locale: es })} – ${format(end, "dd MMM yyyy", { locale: es })}`;
+      return `${format(start, "dd MMM", { locale })} – ${format(end, "dd MMM yyyy", { locale })}`;
     }
-    return format(cursor, "EEEE dd 'de' MMMM yyyy", { locale: es });
-  }, [cursor, view]);
+    return format(cursor, "EEEE dd MMMM yyyy", { locale });
+  }, [cursor, view, locale]);
+
+  const dayHeaders = useMemo(() => {
+    const base = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return Array.from({ length: 7 }, (_, i) => format(addDays(base, i), "EEE", { locale }));
+  }, [locale]);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" ref={gridRef}>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Calendario</h2>
+          <h2 className="text-2xl font-semibold tracking-tight">{t("calendar.title")}</h2>
           <p className="text-sm text-muted-foreground capitalize">{headerLabel}</p>
         </div>
         <div className="flex items-center gap-2">
           <Tabs value={view} onValueChange={(v) => setView(v as typeof view)}>
             <TabsList>
-              <TabsTrigger value="month">Mes</TabsTrigger>
-              <TabsTrigger value="week">Semana</TabsTrigger>
-              <TabsTrigger value="day">Día</TabsTrigger>
+              <TabsTrigger value="month">{t("common.month")}</TabsTrigger>
+              <TabsTrigger value="week">{t("common.week")}</TabsTrigger>
+              <TabsTrigger value="day">{t("common.day")}</TabsTrigger>
             </TabsList>
           </Tabs>
           <div className="flex items-center gap-1">
             <Button variant="outline" size="icon" onClick={() => shift(-1)}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setCursor(new Date())}>Hoy</Button>
+            <Button variant="outline" size="sm" onClick={goToday}>{t("common.today")}</Button>
             <Button variant="outline" size="icon" onClick={() => shift(1)}>
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -106,13 +155,29 @@ function CalendarPage() {
           activitiesOn={activitiesOn}
           onDrop={onDrop}
           setDragId={setDragId}
+          dayHeaders={dayHeaders}
+          pulseToday={pulseToday}
+          moreLabel={t("calendar.more")}
         />
       )}
       {view === "week" && (
-        <WeekView cursor={cursor} activitiesOn={activitiesOn} onDrop={onDrop} setDragId={setDragId} />
+        <WeekView
+          cursor={cursor}
+          activitiesOn={activitiesOn}
+          onDrop={onDrop}
+          setDragId={setDragId}
+          locale={locale}
+          pulseToday={pulseToday}
+        />
       )}
       {view === "day" && (
-        <DayView day={cursor} activities={activitiesOn(cursor)} setDragId={setDragId} />
+        <DayView
+          day={cursor}
+          activities={activitiesOn(cursor)}
+          setDragId={setDragId}
+          locale={locale}
+          emptyLabel={t("calendar.noActivitiesDay")}
+        />
       )}
     </div>
   );
@@ -123,22 +188,30 @@ function ActivityPill({ a, onDragStart }: { a: Activity; onDragStart: () => void
     <div
       draggable
       onDragStart={onDragStart}
-      className="group flex items-center gap-1.5 rounded-md bg-accent/60 hover:bg-accent px-1.5 py-1 text-xs cursor-grab active:cursor-grabbing"
+      className="group rounded-md bg-accent/60 hover:bg-accent px-1.5 py-1 cursor-grab active:cursor-grabbing"
       title={`${a.name} · ${a.assignee}`}
     >
-      <span className={cn("h-2 w-2 rounded-full shrink-0", statusBar[a.status])} />
-      <span className="truncate">{a.name}</span>
+      <div className="flex items-center gap-1.5 text-xs">
+        <span className={cn("h-2 w-2 rounded-full shrink-0", statusBar[a.status])} />
+        <span className="truncate">{a.name}</span>
+      </div>
+      <div className="pl-3.5">
+        <AssigneeBadge name={a.assignee} />
+      </div>
     </div>
   );
 }
 
 function MonthGrid({
-  cursor, activitiesOn, onDrop, setDragId,
+  cursor, activitiesOn, onDrop, setDragId, dayHeaders, pulseToday, moreLabel,
 }: {
   cursor: Date;
   activitiesOn: (d: Date) => Activity[];
   onDrop: (d: Date) => void;
   setDragId: (id: string | null) => void;
+  dayHeaders: string[];
+  pulseToday: boolean;
+  moreLabel: string;
 }) {
   const monthStart = startOfMonth(cursor);
   const monthEnd = endOfMonth(cursor);
@@ -150,8 +223,8 @@ function MonthGrid({
   return (
     <Card className="overflow-hidden p-0">
       <div className="grid grid-cols-7 border-b border-border bg-muted/30 text-xs font-medium text-muted-foreground">
-        {["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"].map((d) => (
-          <div key={d} className="px-2 py-2 text-center">{d}</div>
+        {dayHeaders.map((d) => (
+          <div key={d} className="px-2 py-2 text-center capitalize">{d}</div>
         ))}
       </div>
       <div className="grid grid-cols-7">
@@ -162,11 +235,13 @@ function MonthGrid({
           return (
             <div
               key={day.toISOString()}
+              data-date={format(day, "yyyy-MM-dd")}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(day)}
               className={cn(
-                "min-h-[110px] border-b border-r border-border p-1.5 flex flex-col gap-1",
+                "min-h-[130px] border-b border-r border-border p-1.5 flex flex-col gap-1 transition-all",
                 !isCur && "bg-background/40 text-muted-foreground/60",
+                isToday && pulseToday && "ring-2 ring-primary ring-inset",
               )}
             >
               <div className="flex items-center justify-between">
@@ -184,7 +259,7 @@ function MonthGrid({
                   <ActivityPill key={a.id} a={a} onDragStart={() => setDragId(a.id)} />
                 ))}
                 {items.length > 3 && (
-                  <span className="text-[10px] text-muted-foreground">+{items.length - 3} más</span>
+                  <span className="text-[10px] text-muted-foreground">+{items.length - 3} {moreLabel}</span>
                 )}
               </div>
             </div>
@@ -196,12 +271,14 @@ function MonthGrid({
 }
 
 function WeekView({
-  cursor, activitiesOn, onDrop, setDragId,
+  cursor, activitiesOn, onDrop, setDragId, locale, pulseToday,
 }: {
   cursor: Date;
   activitiesOn: (d: Date) => Activity[];
   onDrop: (d: Date) => void;
   setDragId: (id: string | null) => void;
+  locale: Locale;
+  pulseToday: boolean;
 }) {
   const start = startOfWeek(cursor, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -215,13 +292,17 @@ function WeekView({
           return (
             <div
               key={day.toISOString()}
+              data-date={format(day, "yyyy-MM-dd")}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(day)}
-              className="min-h-[420px] border-r border-border p-2 flex flex-col gap-2"
+              className={cn(
+                "min-h-[420px] border-r border-border p-2 flex flex-col gap-2 transition-all",
+                isToday && pulseToday && "ring-2 ring-primary ring-inset",
+              )}
             >
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-xs text-muted-foreground capitalize">
-                  {format(day, "EEE", { locale: es })}
+                  {format(day, "EEE", { locale })}
                 </span>
                 <span className={cn(
                   "inline-flex h-6 w-6 items-center justify-center rounded-full text-xs",
@@ -239,16 +320,18 @@ function WeekView({
   );
 }
 
-function DayView({ day, activities, setDragId }: {
+function DayView({ day, activities, setDragId, locale, emptyLabel }: {
   day: Date;
   activities: Activity[];
   setDragId: (id: string | null) => void;
+  locale: Locale;
+  emptyLabel: string;
 }) {
   return (
     <Card className="p-4">
-      <h3 className="mb-3 font-medium capitalize">{format(day, "EEEE dd 'de' MMMM", { locale: es })}</h3>
+      <h3 className="mb-3 font-medium capitalize">{format(day, "EEEE dd MMMM", { locale })}</h3>
       {activities.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Sin actividades en este día.</p>
+        <p className="text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (
         <ul className="space-y-2">
           {activities.map((a) => (
@@ -261,8 +344,11 @@ function DayView({ day, activities, setDragId }: {
               <span className={cn("mt-1.5 h-2.5 w-2.5 rounded-full shrink-0", statusBar[a.status])} />
               <div className="flex-1 min-w-0">
                 <p className="font-medium">{a.name}</p>
-                <p className="text-xs text-muted-foreground">
-                  {a.assignee} · {a.category}
+                <div className="mt-1">
+                  <AssigneeBadge name={a.assignee} />
+                </div>
+                <p className="text-xs text-muted-foreground mt-0.5">
+                  {a.category}
                   {a.startTime && ` · ${a.startTime}${a.endTime ? `–${a.endTime}` : ""}`}
                 </p>
               </div>
@@ -273,3 +359,6 @@ function DayView({ day, activities, setDragId }: {
     </Card>
   );
 }
+
+// keep referenced to silence unused import warnings in some bundlers
+void useEffect;
