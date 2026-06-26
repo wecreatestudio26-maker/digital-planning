@@ -1,55 +1,85 @@
-# Plan de mejoras (5 cambios)
+# Sistema de Organizaciones y Roles
 
-## 1. Volver a la portada desde el Dashboard
-- **Header** (`src/routes/__root.tsx`): convertir el logo/título "Digital Planning" en un `<Link to="/">` clicable.
-- **Sidebar** (`src/components/AppSidebar.tsx`): añadir al final un ítem **Portada** (icono `Home`) que enlaza a `/`.
+## Resumen
+Añadir un modelo de **organizaciones** con membresías y roles jerárquicos (OWNER, ADMIN, EDITOR, VIEWER). El primer usuario que se registra crea automáticamente una organización y queda como OWNER. Se reemplaza la página actual `Equipo` (basada en `localStorage`) por una gestión real respaldada por Lovable Cloud.
 
-## 2. Idioma global y persistente
-- Instalar `i18next` + `react-i18next` + `i18next-browser-languagedetector`.
-- Crear `src/i18n/index.ts` con 4 namespaces (ES/EN/FR/IT) y persistencia en `localStorage` (clave `app-lang`).
-- Mover el selector de idioma actual (portada) a un componente `LanguageSwitcher` reutilizable, montado en:
-  - Header de la portada (donde ya está).
-  - Header del layout autenticado.
-- Traducir: sidebar (todos los ítems del menú), header, dashboard, calendario (encabezados, botones Hoy/Anterior/Siguiente, vistas Mes/Semana), formulario de actividad (labels, placeholders, botones), portada (sustituye el `useState` actual por `useTranslation`).
-- Otras páginas (Gantt, Equipo, etc.) reciben solo el título traducido en esta iteración; el contenido interno queda para una pasada futura — lo dejaré documentado en `.lovable/plan.md`.
+## 1. Base de datos (migración)
 
-## 3. Responsable visible en cada actividad del calendario
-- En `src/routes/_authenticated/calendario.tsx`, debajo del nombre de la actividad renderizar un mini-row: `Avatar` (iniciales del responsable, color derivado del hash del nombre) + nombre en `text-xs text-muted-foreground`.
-- Si no hay responsable asignado, no se muestra nada.
+Nuevas tablas y tipos:
 
-## 4. Botón **Hoy** funcional
-- En el calendario, el botón Hoy debe:
-  1. Reposicionar el calendario en el mes/semana actual.
-  2. Hacer scroll suave hasta la celda del día actual.
-  3. Resaltar las actividades de hoy con un anillo/ring temporal (~2s).
-- Implementación: `setCurrentDate(new Date())` + `scrollIntoView` sobre `[data-date="YYYY-MM-DD"]`.
+- **enum `org_role`**: `'OWNER' | 'ADMIN' | 'EDITOR' | 'VIEWER'`
+- **`organizations`**: `id`, `name`, `owner_id` (uuid → auth.users), `created_at`. Único `owner_id` activo por organización (UNIQUE parcial sobre `owner_id`).
+- **`organization_members`**: `id`, `org_id`, `user_id`, `role org_role`, `is_owner bool`, `invited_by`, `created_at`. UNIQUE `(org_id, user_id)`. UNIQUE parcial `(org_id) WHERE is_owner = true` ⇒ un único OWNER por organización.
+- **`organization_invites`**: `id`, `org_id`, `email`, `role`, `token`, `invited_by`, `expires_at`, `accepted_at`.
 
-## 5. Categorías y responsables creables desde el formulario
-- **Backend** (migración Lovable Cloud):
-  - Tabla `categories(id, user_id, name, color, created_at)` — RLS por `user_id`, GRANTs estándar.
-  - Tabla `team_members(id, user_id, full_name, email, role, avatar_color, created_at)` — RLS por `user_id`.
-  - Trigger seed opcional: al primer login, sembrar categorías por defecto (Trabajo, Estudio, Reuniones, Proyecto).
-- **Server functions** (`src/lib/catalog.functions.ts`):
-  - `listCategories`, `createCategory`
-  - `listTeamMembers`, `createTeamMember`
-  - Todas con `requireSupabaseAuth`.
-- **Formulario** (`src/components/ActivityForm.tsx`):
-  - Reemplazar el `<Input>` de categoría por un `<Combobox>` (Command + Popover) con las categorías de la BD; opción "➕ Crear categoría…" abre un mini-modal (nombre + color).
-  - Reemplazar el `<Input>` de responsable por el mismo patrón con `team_members`; opción "➕ Añadir a Equipo…" crea miembro (nombre + email opcional).
-  - Tras crear, refrescar la lista con `queryClient.invalidateQueries` y autoseleccionarlo.
-- **Página Equipo**: pasará a leer/escribir desde `team_members` en una iteración futura (fuera de este plan para no expandirlo); por ahora el formulario crea miembros que aparecerán cuando esa página se migre.
+Funciones SECURITY DEFINER (evitan recursión en RLS):
+- `get_user_org(uuid) → uuid`
+- `has_org_role(_user uuid, _org uuid, _roles org_role[]) → bool`
+- `is_org_owner(_user uuid, _org uuid) → bool`
 
-## Notas técnicas
-- Las actividades siguen en localStorage (zustand). Solo categorías y responsables se persisten en BD; las actividades almacenan el nombre como string (compat hacia atrás).
-- i18n inicializado del lado cliente; SSR seguirá renderizando en ES por defecto y se hidratará al idioma persistido (evita flicker con `suppressHydrationWarning` en `<html>`).
-- El bug de build previo ya quedó resuelto al alinear versiones de `@tanstack/react-router` y `@tanstack/react-start`.
+Trigger sobre `auth.users` (extiende `handle_new_user`):
+1. Crear `organizations` con `owner_id = NEW.id`, `name = coalesce(meta.org_name, email_local_part)`.
+2. Insertar membresía `role='OWNER'`, `is_owner=true`.
 
-## Archivos principales a tocar
-- `src/routes/__root.tsx`, `src/components/AppSidebar.tsx`
-- `src/routes/index.tsx` (portada)
-- `src/i18n/index.ts` (nuevo) + `src/i18n/locales/{es,en,fr,it}.json`
-- `src/components/LanguageSwitcher.tsx` (nuevo)
-- `src/routes/_authenticated/calendario.tsx`
-- `src/components/ActivityForm.tsx`
-- `src/lib/catalog.functions.ts` (nuevo)
-- Migración SQL: `categories` + `team_members`
+GRANTs a `authenticated` y `service_role` en todas las tablas nuevas.
+
+## 2. RLS (resumen en lenguaje claro)
+
+- **organizations**: miembros ven su organización; sólo OWNER puede actualizar nombre; sólo OWNER puede eliminar.
+- **organization_members**:
+  - SELECT: cualquier miembro de la org.
+  - INSERT/UPDATE/DELETE: OWNER o ADMIN, **excepto** que nadie (ni OWNER) puede borrar la fila marcada `is_owner=true`; sólo se elimina vía “transferencia de propiedad”.
+  - Sólo OWNER puede asignar/cambiar el rol `OWNER` (transferencia).
+- **organization_invites**: gestión por OWNER/ADMIN; SELECT por email coincidente para aceptar.
+
+## 3. Transferencia de propiedad
+
+Función `transfer_ownership(_org uuid, _new_owner uuid)` (SECURITY DEFINER):
+- Verifica que el llamante es el OWNER actual.
+- En una transacción: `UPDATE` la membresía actual a `role='ADMIN', is_owner=false` y la del nuevo usuario a `role='OWNER', is_owner=true`; actualiza `organizations.owner_id`.
+- Mantiene el invariante de un único OWNER (restricción UNIQUE parcial).
+
+## 4. Server functions (`src/lib/org.functions.ts`)
+
+Todas con `requireSupabaseAuth`:
+- `getMyOrganization()` – devuelve org + rol del usuario actual.
+- `listMembers()` – lista miembros con perfil (full_name/email).
+- `inviteMember({ email, role })` – sólo OWNER/ADMIN; crea invite + email opcional.
+- `updateMemberRole({ memberId, role })` – OWNER puede todo; ADMIN sólo entre EDITOR/VIEWER; nunca tocar OWNER.
+- `removeMember({ memberId })` – bloquea borrar OWNER.
+- `transferOwnership({ newOwnerUserId })` – sólo OWNER actual, vía RPC.
+- `renameOrganization({ name })` – sólo OWNER.
+
+## 5. Frontend
+
+- **Hook `useOrgRole()`**: lee la membresía actual (cache vía React Query) y expone `role`, `isOwner`, `can(action)`.
+- **Helper `can.ts`**: matriz de permisos (invite, changeRole, removeMember, transferOwner, manageBilling, manageProjects).
+- **Sidebar / rutas**: ítems sensibles (Equipo, Presupuesto, etc.) ocultos para VIEWER; opciones de billing sólo OWNER.
+- **`/_authenticated/equipo`** (reescritura):
+  - Tabla de miembros desde DB (`listMembers`).
+  - Badge de rol con color; el OWNER muestra ícono ⭐ y no es editable salvo por OWNER (transferencia).
+  - Botón “Invitar miembro” → diálogo (email + rol). Roles seleccionables dependen del rol del usuario.
+  - Acciones por fila: cambiar rol (Select), eliminar (icono trash). Deshabilitadas según permisos.
+  - Sección extra visible sólo al OWNER: **Transferir propiedad** (Select de miembros + confirmación de doble paso).
+  - Eliminada la dependencia de `productivity-store` para miembros; se mantiene sólo para el resto (hábitos, etc.).
+- **i18n**: añadir claves `team.*` y `roles.*` en los 4 locales existentes.
+
+## 6. Onboarding del primer usuario
+
+El trigger en `auth.users` ya cubre el “primer usuario = OWNER de su nueva org”. Para usuarios invitados después, el flujo de aceptar invitación (`/auth/accept-invite?token=...`) los añade como miembros con el rol indicado en lugar de crear una organización nueva. (Página de aceptación es una mejora futura; en esta entrega, las invitaciones se registran y aparecen como pendientes; la aceptación automática queda como TODO documentado.)
+
+## 7. Detalles técnicos
+
+- `app_role` existente (`admin/user`) **no se toca**: sigue siendo el rol global de la app (acceso al panel admin de Lovable). El nuevo `org_role` es ortogonal y aplica dentro de la organización.
+- Todas las consultas de miembros/categorías/equipos seguirán filtradas por `user_id` como hoy; en una iteración futura se migrarán a `org_id` para compartir datos entre miembros. Esto se documenta como deuda.
+- Tipos Supabase se regeneran automáticamente tras la migración.
+
+## 8. Archivos a tocar/crear
+
+- `supabase/migrations/<ts>_organizations.sql` (nueva).
+- `src/lib/org.functions.ts` (nuevo).
+- `src/lib/permissions.ts` (nuevo – matriz `can`).
+- `src/hooks/useOrgRole.ts` (nuevo).
+- `src/routes/_authenticated/equipo.tsx` (reescrito).
+- `src/components/AppSidebar.tsx` (gating por rol).
+- `src/i18n/locales/*.json` (claves nuevas).
