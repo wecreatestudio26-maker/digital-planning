@@ -109,11 +109,17 @@ function TeamPage() {
             <DialogTrigger asChild>
               <Button><Plus className="h-4 w-4" /> Invitar miembro</Button>
             </DialogTrigger>
-            <DialogContent>
+            <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
               <DialogHeader><DialogTitle>Invitar miembro</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <Label>Correo</Label>
+                  <Label>Nombre</Label>
+                  <Input value={form.name}
+                    onChange={(e) => setForm({ ...form, name: e.target.value })}
+                    placeholder="Ej. María García" />
+                </div>
+                <div>
+                  <Label>Correo electrónico</Label>
                   <Input type="email" value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })} />
                 </div>
@@ -128,6 +134,42 @@ function TeamPage() {
                     </SelectContent>
                   </Select>
                 </div>
+                {(form.role === "EDITOR" || form.role === "VIEWER") && (
+                  <div className="space-y-2">
+                    <Label>Permisos por módulo</Label>
+                    <p className="text-xs text-muted-foreground">
+                      {form.role === "VIEWER"
+                        ? "Por defecto puede ver todo. Marca 'Editar' para permitir cambios."
+                        : "Por defecto puede ver y editar todo. Desmarca para restringir."}
+                    </p>
+                    <div className="border border-border rounded-md divide-y divide-border">
+                      <div className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 py-2 text-xs text-muted-foreground">
+                        <span>Módulo</span><span>Ver</span><span>Editar</span>
+                      </div>
+                      {MODULES.map((mod) => {
+                        const p = form.permissions[mod.key] ?? {};
+                        const defaultView = form.role === "EDITOR" ? true : true;
+                        const defaultEdit = form.role === "EDITOR" ? true : false;
+                        const viewVal = p.view ?? defaultView;
+                        const editVal = p.edit ?? defaultEdit;
+                        const setP = (next: { view?: boolean; edit?: boolean }) =>
+                          setForm({
+                            ...form,
+                            permissions: { ...form.permissions, [mod.key]: { ...p, ...next } },
+                          });
+                        return (
+                          <div key={mod.key} className="grid grid-cols-[1fr_auto_auto] gap-3 px-3 py-2 items-center">
+                            <span className="text-sm">{mod.label}</span>
+                            <Checkbox checked={viewVal} onCheckedChange={(v) => setP({ view: v === true })} />
+                            <Checkbox checked={editVal}
+                              disabled={!viewVal}
+                              onCheckedChange={(v) => setP({ edit: v === true })} />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpenInvite(false)}>Cancelar</Button>
@@ -135,7 +177,7 @@ function TeamPage() {
                   disabled={!form.email || inviteMut.isPending}
                   onClick={() => inviteMut.mutate(form)}
                 >
-                  <Mail className="h-4 w-4" /> Enviar
+                  <Mail className="h-4 w-4" /> Enviar invitación
                 </Button>
               </DialogFooter>
             </DialogContent>
