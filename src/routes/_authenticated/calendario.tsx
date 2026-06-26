@@ -4,7 +4,7 @@ import {
   addDays, addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format,
   isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths,
 } from "date-fns";
-import { es, enUS, fr, it } from "date-fns/locale";
+import { es, enUS, fr, it, type Locale } from "date-fns/locale";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
