@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { format, addDays } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +20,7 @@ export const Route = createFileRoute("/_authenticated/reuniones")({
 });
 
 function MeetingsPage() {
+  const { t } = useTranslation();
   const {
     meetings, addMeeting, updateMeeting, removeMeeting,
     addAgreement, toggleAgreementDone, removeAgreement, convertAgreement,
@@ -35,7 +37,7 @@ function MeetingsPage() {
   const renderMeetings = (list: typeof meetings) => (
     <div className="grid gap-4 lg:grid-cols-2">
       {list.length === 0 && (
-        <p className="text-sm text-muted-foreground">No hay reuniones aquí.</p>
+        <p className="text-sm text-muted-foreground">{t("meetings.empty")}</p>
       )}
       {list.map((m) => {
         const allDone = m.agreements.length > 0 && m.agreements.every((a) => a.done);
@@ -49,25 +51,25 @@ function MeetingsPage() {
                     {m.completed && <Archive className="h-3.5 w-3.5 text-muted-foreground" />}
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">
-                    {m.date}{m.archivedAt && ` · archivada ${m.archivedAt.slice(0, 10)}`}
+                    {m.date}{m.archivedAt && ` · ${t("meetings.archivedOn", { date: m.archivedAt.slice(0, 10) })}`}
                   </p>
                 </div>
-                <Button variant="ghost" size="icon" onClick={() => { if (confirm("¿Eliminar reunión?")) removeMeeting(m.id); }}>
+                <Button variant="ghost" size="icon" onClick={() => { if (confirm(t("meetings.confirmDelete"))) removeMeeting(m.id); }}>
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label className="text-xs">Agenda</Label>
+                <Label className="text-xs">{t("meetings.agenda")}</Label>
                 <Textarea value={m.agenda} onChange={(e) => updateMeeting(m.id, { agenda: e.target.value })} rows={2} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Acta</Label>
+                <Label className="text-xs">{t("meetings.minutes")}</Label>
                 <Textarea value={m.minutes} onChange={(e) => updateMeeting(m.id, { minutes: e.target.value })} rows={3} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Acuerdos</Label>
+                <Label className="text-xs">{t("meetings.agreements")}</Label>
                 <ul className="space-y-1.5 mt-1">
                   {m.agreements.map((a) => (
                     <li key={a.id} className="flex items-center gap-2 text-sm group">
@@ -79,7 +81,7 @@ function MeetingsPage() {
                       />
                       <span className={`flex-1 ${a.done ? "line-through text-muted-foreground" : ""}`}>
                         {a.text}
-                        {a.convertedTaskId && <span className="text-xs text-primary ml-1">(tarea)</span>}
+                        {a.convertedTaskId && <span className="text-xs text-primary ml-1">({t("meetings.task")})</span>}
                       </span>
                       {!a.convertedTaskId && !m.completed && (
                         <Button size="sm" variant="ghost" onClick={() => {
@@ -92,11 +94,11 @@ function MeetingsPage() {
                             assignee: a.assignee ?? "Sin asignar",
                             priority: "media",
                             status: "pendiente",
-                            description: `Acuerdo de la reunión: ${m.title}`,
+                            description: t("meetings.agreementDesc", { title: m.title }),
                           });
                           convertAgreement(m.id, a.id, id);
-                          toast.success("Acuerdo convertido en tarea");
-                        }}><ListPlus className="h-3.5 w-3.5" /> Tarea</Button>
+                          toast.success(t("meetings.agreementConverted"));
+                        }}><ListPlus className="h-3.5 w-3.5" /> {t("meetings.makeTask")}</Button>
                       )}
                       <Button variant="ghost" size="icon" className="opacity-0 group-hover:opacity-100" onClick={() => removeAgreement(m.id, a.id)}>
                         <Trash2 className="h-3.5 w-3.5" />
@@ -106,7 +108,7 @@ function MeetingsPage() {
                 </ul>
                 {!m.completed && (
                   <div className="flex gap-2 mt-2">
-                    <Input value={newAgr[m.id] ?? ""} onChange={(e) => setNewAgr({ ...newAgr, [m.id]: e.target.value })} placeholder="Nuevo acuerdo" className="h-8" />
+                    <Input value={newAgr[m.id] ?? ""} onChange={(e) => setNewAgr({ ...newAgr, [m.id]: e.target.value })} placeholder={t("meetings.newAgreement")} className="h-8" />
                     <Button size="sm" onClick={() => { const v = newAgr[m.id]; if (v) { addAgreement(m.id, v); setNewAgr({ ...newAgr, [m.id]: "" }); } }}><Plus className="h-3.5 w-3.5" /></Button>
                   </div>
                 )}
@@ -114,17 +116,17 @@ function MeetingsPage() {
 
               <div className="pt-2 border-t border-border">
                 {m.completed ? (
-                  <Button variant="outline" className="w-full" onClick={() => { reopenMeeting(m.id); toast.success("Reunión reactivada"); }}>
-                    <RotateCcw className="h-4 w-4" /> Reactivar reunión
+                  <Button variant="outline" className="w-full" onClick={() => { reopenMeeting(m.id); toast.success(t("meetings.reactivated")); }}>
+                    <RotateCcw className="h-4 w-4" /> {t("meetings.reactivate")}
                   </Button>
                 ) : (
                   <Button
                     className="w-full"
                     disabled={!allDone}
-                    onClick={() => { completeMeeting(m.id); toast.success("Reunión completa y archivada"); }}
+                    onClick={() => { completeMeeting(m.id); toast.success(t("meetings.completedToast")); }}
                   >
                     <CheckCircle2 className="h-4 w-4" />
-                    {allDone ? "Marcar reunión completa" : `Completa los acuerdos (${m.agreements.filter((a) => a.done).length}/${m.agreements.length})`}
+                    {allDone ? t("meetings.markComplete") : t("meetings.completeProgress", { done: m.agreements.filter((a) => a.done).length, total: m.agreements.length })}
                   </Button>
                 )}
               </div>
@@ -139,21 +141,21 @@ function MeetingsPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Reuniones</h2>
-          <p className="text-sm text-muted-foreground">Agenda, actas y acuerdos. Marca cada acuerdo y archiva la reunión al completarla.</p>
+          <h2 className="text-2xl font-semibold tracking-tight">{t("meetings.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("meetings.subtitle")}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> Nueva reunión</Button></DialogTrigger>
+          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> {t("meetings.newMeeting")}</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Nueva reunión</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("meetings.newMeeting")}</DialogTitle></DialogHeader>
             <div className="space-y-3">
-              <div><Label>Título</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
-              <div><Label>Fecha</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
-              <div><Label>Agenda</Label><Textarea value={form.agenda} onChange={(e) => setForm({ ...form, agenda: e.target.value })} rows={3} /></div>
+              <div><Label>{t("meetings.meetingTitle")}</Label><Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} /></div>
+              <div><Label>{t("meetings.date")}</Label><Input type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} /></div>
+              <div><Label>{t("meetings.agenda")}</Label><Textarea value={form.agenda} onChange={(e) => setForm({ ...form, agenda: e.target.value })} rows={3} /></div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={() => { if (form.title) { addMeeting({ ...form, minutes: "" }); setForm({ title: "", date: format(new Date(), "yyyy-MM-dd"), agenda: "" }); setOpen(false); } }}>Guardar</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+              <Button onClick={() => { if (form.title) { addMeeting({ ...form, minutes: "" }); setForm({ title: "", date: format(new Date(), "yyyy-MM-dd"), agenda: "" }); setOpen(false); } }}>{t("common.save")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -161,8 +163,8 @@ function MeetingsPage() {
 
       <Tabs defaultValue="active">
         <TabsList>
-          <TabsTrigger value="active">Activas ({active.length})</TabsTrigger>
-          <TabsTrigger value="archived">Archivadas ({archived.length})</TabsTrigger>
+          <TabsTrigger value="active">{t("meetings.activeTab", { count: active.length })}</TabsTrigger>
+          <TabsTrigger value="archived">{t("meetings.archivedTab", { count: archived.length })}</TabsTrigger>
         </TabsList>
         <TabsContent value="active" className="mt-4">{renderMeetings(active)}</TabsContent>
         <TabsContent value="archived" className="mt-4">{renderMeetings(archived)}</TabsContent>
