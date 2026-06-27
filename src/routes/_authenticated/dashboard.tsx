@@ -65,7 +65,7 @@ function Dashboard() {
   const metrics = [
     { label: "Total Actividades", value: total, icon: ListChecks, color: "text-foreground" },
     { label: "Actividades Completadas", value: completados, icon: CheckCircle2, color: "text-primary" },
-    { label: "En progreso", value: enProgreso, icon: Loader2, color: "text-[oklch(0.86_0.17_85)]" },
+    { label: "Actividades En progreso", value: enProgreso, icon: Loader2, color: "text-[oklch(0.86_0.17_85)]" },
     { label: "Pendientes", value: pendientes, icon: Clock, color: "text-muted-foreground" },
   ];
 
