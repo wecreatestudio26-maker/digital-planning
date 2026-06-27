@@ -1,12 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { format, startOfWeek, addDays } from "date-fns";
+import { format, startOfWeek } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Play, Pause, Square, Plus, Trash2 } from "lucide-react";
 import { useProductivity } from "@/lib/productivity-store";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/tiempo")({
   head: () => ({ meta: [{ title: "Registro de Tiempo — Planeador" }, { name: "description", content: "Temporizador y registro de horas por tarea." }] }),
@@ -19,6 +20,7 @@ function fmt(ms: number) {
 }
 
 function TimePage() {
+  const { t } = useTranslation();
   const { activeTimer, startTimer, pauseTimer, resumeTimer, stopTimer, timeEntries, addTimeEntry, removeTimeEntry } = useProductivity();
   const [taskName, setTaskName] = useState("");
   const [project, setProject] = useState("");
@@ -26,8 +28,8 @@ function TimePage() {
   const [manual, setManual] = useState({ task: "", project: "", minutes: 30, date: format(new Date(), "yyyy-MM-dd") });
 
   useEffect(() => {
-    const t = setInterval(() => setTick((x) => x + 1), 1000);
-    return () => clearInterval(t);
+    const t2 = setInterval(() => setTick((x) => x + 1), 1000);
+    return () => clearInterval(t2);
   }, []);
 
   const elapsed = activeTimer
@@ -45,12 +47,12 @@ function TimePage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Registro de tiempo</h2>
-        <p className="text-sm text-muted-foreground">Temporizador y resúmenes por proyecto.</p>
+        <h2 className="text-2xl font-semibold tracking-tight">{t("time.title")}</h2>
+        <p className="text-sm text-muted-foreground">{t("time.subtitle")}</p>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Temporizador</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("time.timer_title")}</CardTitle></CardHeader>
         <CardContent>
           {activeTimer ? (
             <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -60,17 +62,17 @@ function TimePage() {
               </div>
               <div className="flex gap-2">
                 {activeTimer.pausedAt
-                  ? <Button onClick={resumeTimer}><Play className="h-4 w-4" /> Reanudar</Button>
-                  : <Button variant="secondary" onClick={pauseTimer}><Pause className="h-4 w-4" /> Pausar</Button>}
-                <Button variant="destructive" onClick={stopTimer}><Square className="h-4 w-4" /> Detener</Button>
+                  ? <Button onClick={resumeTimer}><Play className="h-4 w-4" /> {t("time.resume")}</Button>
+                  : <Button variant="secondary" onClick={pauseTimer}><Pause className="h-4 w-4" /> {t("time.pause")}</Button>}
+                <Button variant="destructive" onClick={stopTimer}><Square className="h-4 w-4" /> {t("time.stop")}</Button>
               </div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 items-end">
-              <div><Label>Tarea</Label><Input value={taskName} onChange={(e) => setTaskName(e.target.value)} placeholder="¿En qué trabajas?" /></div>
-              <div><Label>Proyecto</Label><Input value={project} onChange={(e) => setProject(e.target.value)} placeholder="Proyecto" /></div>
+              <div><Label>{t("time.task_label")}</Label><Input value={taskName} onChange={(e) => setTaskName(e.target.value)} placeholder={t("time.task_placeholder")} /></div>
+              <div><Label>{t("time.project_label")}</Label><Input value={project} onChange={(e) => setProject(e.target.value)} placeholder={t("time.project_placeholder")} /></div>
               <Button onClick={() => { if (taskName && project) { startTimer(taskName, project); setTaskName(""); setProject(""); } }}>
-                <Play className="h-4 w-4" /> Iniciar
+                <Play className="h-4 w-4" /> {t("time.start")}
               </Button>
             </div>
           )}
@@ -79,16 +81,16 @@ function TimePage() {
 
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-base">Hoy</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t("time.today_title")}</CardTitle></CardHeader>
           <CardContent>
             <div className="text-3xl font-semibold">{Math.floor(todayTotal / 60)}h {todayTotal % 60}m</div>
-            <p className="text-sm text-muted-foreground mt-1">Tiempo total registrado hoy.</p>
+            <p className="text-sm text-muted-foreground mt-1">{t("time.today_subtitle")}</p>
           </CardContent>
         </Card>
         <Card>
-          <CardHeader><CardTitle className="text-base">Semana por proyecto</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t("time.week_title")}</CardTitle></CardHeader>
           <CardContent className="space-y-2">
-            {Object.entries(byProject).length === 0 && <p className="text-sm text-muted-foreground">Sin registros esta semana.</p>}
+            {Object.entries(byProject).length === 0 && <p className="text-sm text-muted-foreground">{t("time.no_week_entries")}</p>}
             {Object.entries(byProject).map(([p, m]) => (
               <div key={p} className="flex justify-between text-sm">
                 <span>{p}</span><span className="font-medium tabular-nums">{Math.floor(m / 60)}h {m % 60}m</span>
@@ -99,29 +101,29 @@ function TimePage() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Entrada manual</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("time.manual_title")}</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-5 gap-3 items-end">
-            <div><Label>Tarea</Label><Input value={manual.task} onChange={(e) => setManual({ ...manual, task: e.target.value })} /></div>
-            <div><Label>Proyecto</Label><Input value={manual.project} onChange={(e) => setManual({ ...manual, project: e.target.value })} /></div>
-            <div><Label>Minutos</Label><Input type="number" value={manual.minutes} onChange={(e) => setManual({ ...manual, minutes: Number(e.target.value) })} /></div>
-            <div><Label>Fecha</Label><Input type="date" value={manual.date} onChange={(e) => setManual({ ...manual, date: e.target.value })} /></div>
+            <div><Label>{t("time.task_label")}</Label><Input value={manual.task} onChange={(e) => setManual({ ...manual, task: e.target.value })} /></div>
+            <div><Label>{t("time.project_label")}</Label><Input value={manual.project} onChange={(e) => setManual({ ...manual, project: e.target.value })} /></div>
+            <div><Label>{t("time.minutes_label")}</Label><Input type="number" value={manual.minutes} onChange={(e) => setManual({ ...manual, minutes: Number(e.target.value) })} /></div>
+            <div><Label>{t("time.date_label")}</Label><Input type="date" value={manual.date} onChange={(e) => setManual({ ...manual, date: e.target.value })} /></div>
             <Button onClick={() => { if (manual.task) { addTimeEntry({ taskName: manual.task, project: manual.project, minutes: manual.minutes, date: manual.date }); setManual({ ...manual, task: "" }); } }}>
-              <Plus className="h-4 w-4" /> Agregar
+              <Plus className="h-4 w-4" /> {t("time.add")}
             </Button>
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Historial</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("time.history_title")}</CardTitle></CardHeader>
         <CardContent>
           <table className="w-full text-sm">
             <thead><tr className="text-xs text-muted-foreground border-b border-border">
-              <th className="text-left py-2 font-normal">Fecha</th>
-              <th className="text-left font-normal">Tarea</th>
-              <th className="text-left font-normal">Proyecto</th>
-              <th className="text-right font-normal">Duración</th>
+              <th className="text-left py-2 font-normal">{t("time.col_date")}</th>
+              <th className="text-left font-normal">{t("time.col_task")}</th>
+              <th className="text-left font-normal">{t("time.col_project")}</th>
+              <th className="text-right font-normal">{t("time.col_duration")}</th>
               <th></th>
             </tr></thead>
             <tbody>
