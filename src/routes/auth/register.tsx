@@ -11,25 +11,16 @@ import { useAuth } from "@/hooks/useAuth";
 import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
 import { redeemGumroadLicense } from "@/lib/gumroad.functions";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/auth/register")({
   component: RegisterPage,
 });
 
-function passwordStrength(pw: string): { label: string; level: 0 | 1 | 2 | 3; color: string } {
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
-  if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
-  if (score === 0) return { label: "—", level: 0, color: "bg-muted" };
-  if (score === 1) return { label: "Débil", level: 1, color: "bg-destructive" };
-  if (score === 2) return { label: "Media", level: 2, color: "bg-yellow-500" };
-  return { label: "Fuerte", level: 3, color: "bg-green-500" };
-}
-
 const GUMROAD_URL = import.meta.env.VITE_GUMROAD_PRODUCT_URL as string | undefined;
 
 function RegisterPage() {
+  const { t } = useTranslation();
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const redeem = useServerFn(redeemGumroadLicense);
@@ -42,7 +33,18 @@ function RegisterPage() {
   const [terms, setTerms] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const strength = useMemo(() => passwordStrength(password), [password]);
+  function passwordStrength(pw: string): { label: string; level: 0 | 1 | 2 | 3; color: string } {
+    let score = 0;
+    if (pw.length >= 8) score++;
+    if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++;
+    if (/\d/.test(pw) && /[^A-Za-z0-9]/.test(pw)) score++;
+    if (score === 0) return { label: "—", level: 0, color: "bg-muted" };
+    if (score === 1) return { label: t("auth.strengthWeak"), level: 1, color: "bg-destructive" };
+    if (score === 2) return { label: t("auth.strengthMedium"), level: 2, color: "bg-yellow-500" };
+    return { label: t("auth.strengthStrong"), level: 3, color: "bg-green-500" };
+  }
+
+  const strength = useMemo(() => passwordStrength(password), [password, t]);
   const valid =
     fullName.trim().length > 0 &&
     /\S+@\S+\.\S+/.test(email) &&
@@ -72,19 +74,19 @@ function RegisterPage() {
         toast.error(translateAuthError(error));
         return;
       }
-      toast.success("Licencia validada. ¡Bienvenido!");
+      toast.success(t("auth.licenseValidated"));
       navigate({ to: "/dashboard" });
     } catch (err: any) {
-      toast.error(err?.message ?? "Error validando la licencia.");
+      toast.error(err?.message ?? t("auth.licenseError"));
     } finally {
       setLoading(false);
     }
   }
 
   return (
-    <AuthCard title="Crear cuenta" subtitle="Canjea tu licencia de Gumroad">
+    <AuthCard title={t("auth.registerTitle")} subtitle={t("auth.registerSubtitle")}>
       <div className="mb-4 rounded-md border border-border bg-muted/40 p-3 text-xs text-muted-foreground">
-        Introduce la clave de licencia que recibiste por correo de Gumroad tras tu compra.
+        {t("auth.licenseHint")}
         {GUMROAD_URL && (
           <>
             {" "}
@@ -94,22 +96,22 @@ function RegisterPage() {
               rel="noreferrer"
               className="inline-flex items-center gap-1 text-primary hover:underline"
             >
-              Comprar ahora <ExternalLink className="h-3 w-3" />
+              {t("auth.buyNow")} <ExternalLink className="h-3 w-3" />
             </a>
           </>
         )}
       </div>
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="fullName">Nombre completo</Label>
+          <Label htmlFor="fullName">{t("auth.fullName")}</Label>
           <Input id="fullName" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email (el mismo de la compra)</Label>
+          <Label htmlFor="email">{t("auth.emailPurchase")}</Label>
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="licenseKey">Clave de licencia</Label>
+          <Label htmlFor="licenseKey">{t("auth.licenseKey")}</Label>
           <Input
             id="licenseKey"
             value={licenseKey}
@@ -120,7 +122,7 @@ function RegisterPage() {
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <div className="relative">
             <Input
               id="password"
@@ -135,7 +137,7 @@ function RegisterPage() {
               type="button"
               onClick={() => setShowPass((s) => !s)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-label={showPass ? t("auth.hidePassword") : t("auth.showPassword")}
             >
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
@@ -148,12 +150,12 @@ function RegisterPage() {
                   style={{ width: `${(strength.level / 3) * 100}%` }}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Fortaleza: {strength.label}</p>
+              <p className="text-xs text-muted-foreground">{t("auth.strengthLabel")}: {strength.label}</p>
             </div>
           )}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirmar contraseña</Label>
+          <Label htmlFor="confirm">{t("auth.confirmPassword")}</Label>
           <Input
             id="confirm"
             type={showPass ? "text" : "password"}
@@ -162,23 +164,23 @@ function RegisterPage() {
             required
           />
           {confirm && confirm !== password && (
-            <p className="text-xs text-destructive">Las contraseñas no coinciden</p>
+            <p className="text-xs text-destructive">{t("auth.passwordMismatch")}</p>
           )}
         </div>
         <div className="flex items-start gap-2">
           <Checkbox id="terms" checked={terms} onCheckedChange={(v) => setTerms(v === true)} />
           <Label htmlFor="terms" className="text-sm font-normal leading-tight">
-            Acepto los términos y condiciones
+            {t("auth.acceptTerms")}
           </Label>
         </div>
         <Button type="submit" className="w-full" disabled={!valid || loading}>
-          {loading ? "Validando licencia..." : "Canjear licencia y crear cuenta"}
+          {loading ? t("auth.validatingLicense") : t("auth.redeemLicense")}
         </Button>
       </form>
       <div className="mt-4 text-center text-sm text-muted-foreground">
-        ¿Ya tienes cuenta?{" "}
+        {t("auth.hasAccount")}{" "}
         <Link to="/auth/login" className="text-primary hover:underline">
-          Inicia sesión
+          {t("auth.signIn")}
         </Link>
       </div>
     </AuthCard>

@@ -13,6 +13,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { supabase } from "@/integrations/supabase/client";
 import { ROLE_LABEL, type OrgRole } from "@/lib/permissions";
 import { translateAuthError } from "@/lib/auth-errors";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/invite/$token")({
   head: () => ({ meta: [{ title: "Aceptar invitación — Planeador" }] }),
@@ -20,6 +21,7 @@ export const Route = createFileRoute("/invite/$token")({
 });
 
 function InvitePage() {
+  const { t } = useTranslation();
   const { token } = Route.useParams();
   const navigate = useNavigate();
   const { user, loading: authLoading } = useAuth();
@@ -50,10 +52,10 @@ function InvitePage() {
     setSubmitting(true);
     try {
       await accept({ data: { token } });
-      toast.success("¡Invitación aceptada!");
+      toast.success(t("invite.accepted"));
       navigate({ to: "/" });
     } catch (e: any) {
-      toast.error(e?.message ?? "Error al aceptar");
+      toast.error(e?.message ?? t("invite.acceptError"));
     } finally {
       setSubmitting(false);
     }
@@ -62,8 +64,8 @@ function InvitePage() {
   async function handleCreateAccount(e: React.FormEvent) {
     e.preventDefault();
     if (!invite) return;
-    if (password.length < 6) return toast.error("Mínimo 6 caracteres");
-    if (password !== confirm) return toast.error("Las contraseñas no coinciden");
+    if (password.length < 6) return toast.error(t("auth.minChars"));
+    if (password !== confirm) return toast.error(t("auth.passwordMismatch"));
     setSubmitting(true);
     try {
       const { error } = await supabase.auth.signUp({
@@ -78,14 +80,14 @@ function InvitePage() {
       await new Promise((r) => setTimeout(r, 300));
       const { data: sess } = await supabase.auth.getSession();
       if (!sess.session) {
-        toast.success("Revisa tu correo para confirmar tu cuenta, luego vuelve a este enlace.");
+        toast.success(t("invite.confirmEmail"));
         return;
       }
       await accept({ data: { token } });
-      toast.success("¡Bienvenido!");
+      toast.success(t("invite.welcome"));
       navigate({ to: "/" });
     } catch (e: any) {
-      toast.error(e?.message ?? "Error");
+      toast.error(e?.message ?? t("invite.genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -100,7 +102,7 @@ function InvitePage() {
 
   if (inviteQ.isLoading || authLoading) {
     return (
-      <AuthCard title="Cargando invitación…" subtitle="">
+      <AuthCard title={t("invite.loading")} subtitle="">
         <div className="flex justify-center py-6"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
       </AuthCard>
     );
@@ -108,41 +110,41 @@ function InvitePage() {
 
   if (inviteQ.isError || !invite) {
     return (
-      <AuthCard title="Invitación no válida" subtitle="El enlace no existe o ha caducado">
-        <Button className="w-full" onClick={() => navigate({ to: "/auth/login" })}>Ir a iniciar sesión</Button>
+      <AuthCard title={t("invite.invalidTitle")} subtitle={t("invite.invalidSubtitle")}>
+        <Button className="w-full" onClick={() => navigate({ to: "/auth/login" })}>{t("invite.goToLogin")}</Button>
       </AuthCard>
     );
   }
 
   if (invalid) {
     return (
-      <AuthCard title="Invitación no disponible" subtitle={`Estado: ${status}`}>
-        <Button className="w-full" onClick={() => navigate({ to: "/auth/login" })}>Ir a iniciar sesión</Button>
+      <AuthCard title={t("invite.unavailableTitle")} subtitle={t("invite.statusLabel", { status })}>
+        <Button className="w-full" onClick={() => navigate({ to: "/auth/login" })}>{t("invite.goToLogin")}</Button>
       </AuthCard>
     );
   }
 
   if (expired) {
     return (
-      <AuthCard title="Invitación expirada" subtitle="Pide una nueva invitación al administrador">
-        <Button className="w-full" onClick={() => navigate({ to: "/auth/login" })}>Ir a iniciar sesión</Button>
+      <AuthCard title={t("invite.expiredTitle")} subtitle={t("invite.expiredSubtitle")}>
+        <Button className="w-full" onClick={() => navigate({ to: "/auth/login" })}>{t("invite.goToLogin")}</Button>
       </AuthCard>
     );
   }
 
-  const subtitle = `Te han invitado a ${invite.org_name} como ${ROLE_LABEL[invite.role as OrgRole]}`;
+  const subtitle = t("invite.subtitle", { org: invite.org_name, role: ROLE_LABEL[invite.role as OrgRole] });
 
   if (user && !emailMatches) {
     return (
-      <AuthCard title="Cuenta distinta" subtitle={subtitle}>
+      <AuthCard title={t("invite.wrongAccountTitle")} subtitle={subtitle}>
         <p className="text-sm text-muted-foreground">
-          Esta invitación es para <strong>{invite.email}</strong>, pero estás conectado como <strong>{user.email}</strong>.
+          {t("invite.wrongAccountBody", { inviteEmail: invite.email, currentEmail: user.email })}
         </p>
         <Button
           variant="outline" className="w-full mt-4"
           onClick={async () => { await supabase.auth.signOut(); navigate({ to: `/invite/${token}` as any }); }}
         >
-          Cerrar sesión y continuar
+          {t("invite.signOutAndContinue")}
         </Button>
       </AuthCard>
     );
@@ -150,9 +152,9 @@ function InvitePage() {
 
   if (user && emailMatches) {
     return (
-      <AuthCard title="Aceptar invitación" subtitle={subtitle}>
+      <AuthCard title={t("invite.acceptTitle")} subtitle={subtitle}>
         <Button className="w-full" onClick={handleAcceptExisting} disabled={submitting}>
-          {submitting ? "Procesando…" : "Aceptar y entrar"}
+          {submitting ? t("invite.processing") : t("invite.acceptAndEnter")}
         </Button>
       </AuthCard>
     );
@@ -160,20 +162,20 @@ function InvitePage() {
 
   // Not signed in → create password
   return (
-    <AuthCard title="Crea tu cuenta" subtitle={subtitle}>
+    <AuthCard title={t("invite.createAccountTitle")} subtitle={subtitle}>
       <form onSubmit={handleCreateAccount} className="space-y-4">
         <div className="space-y-2">
-          <Label>Email</Label>
+          <Label>{t("auth.email")}</Label>
           <Input value={invite.email} readOnly disabled />
         </div>
         {invite.name && (
           <div className="space-y-2">
-            <Label>Nombre</Label>
+            <Label>{t("auth.name")}</Label>
             <Input value={invite.name} readOnly disabled />
           </div>
         )}
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <div className="relative">
             <Input
               id="password" type={showPass ? "text" : "password"}
@@ -183,19 +185,19 @@ function InvitePage() {
             <button
               type="button" onClick={() => setShowPass((s) => !s)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-label={showPass ? t("auth.hidePassword") : t("auth.showPassword")}
             >
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirmar contraseña</Label>
+          <Label htmlFor="confirm">{t("auth.confirmPassword")}</Label>
           <Input id="confirm" type={showPass ? "text" : "password"}
             value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
         </div>
         <Button type="submit" className="w-full" disabled={submitting}>
-          {submitting ? "Creando cuenta…" : "Crear cuenta y aceptar"}
+          {submitting ? t("invite.creatingAccount") : t("invite.createAndAccept")}
         </Button>
       </form>
     </AuthCard>

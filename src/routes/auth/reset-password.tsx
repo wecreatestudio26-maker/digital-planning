@@ -7,12 +7,14 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/auth/reset-password")({
   component: ResetPage,
 });
 
 function ResetPage() {
+  const { t } = useTranslation();
   const { updatePassword } = useAuth();
   const navigate = useNavigate();
   const [password, setPassword] = useState("");
@@ -29,27 +31,27 @@ function ResetPage() {
     if (error) {
       toast.error(translateAuthError(error));
     } else {
-      toast.success("Contraseña actualizada");
+      toast.success(t("auth.passwordUpdated"));
       navigate({ to: "/dashboard" });
     }
   }
 
   return (
-    <AuthCard title="Nueva contraseña" subtitle="Elige una contraseña segura">
+    <AuthCard title={t("auth.newPasswordTitle")} subtitle={t("auth.newPasswordSubtitle")}>
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="password">Nueva contraseña</Label>
+          <Label htmlFor="password">{t("auth.newPassword")}</Label>
           <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="confirm">Confirmar contraseña</Label>
+          <Label htmlFor="confirm">{t("auth.confirmPassword")}</Label>
           <Input id="confirm" type="password" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
           {confirm && confirm !== password && (
-            <p className="text-xs text-destructive">Las contraseñas no coinciden</p>
+            <p className="text-xs text-destructive">{t("auth.passwordMismatch")}</p>
           )}
         </div>
         <Button type="submit" className="w-full" disabled={!valid || loading}>
-          {loading ? "Guardando..." : "Actualizar contraseña"}
+          {loading ? t("auth.saving") : t("auth.updatePassword")}
         </Button>
       </form>
     </AuthCard>

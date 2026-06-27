@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils";
-import { STATUS_LABEL, type Status, type Priority, PRIORITY_LABEL } from "@/lib/types";
+import { type Status, type Priority } from "@/lib/types";
+import { useTranslation } from "react-i18next";
 
 export function StatusBadge({ status, className }: { status: Status; className?: string }) {
+  const { t } = useTranslation();
   const styles: Record<Status, string> = {
     pendiente: "bg-muted text-muted-foreground border-border",
     en_progreso: "bg-[oklch(0.82_0.17_85_/_0.18)] text-[oklch(0.86_0.17_85)] border-[oklch(0.82_0.17_85_/_0.4)]",
@@ -15,12 +17,13 @@ export function StatusBadge({ status, className }: { status: Status; className?:
         className,
       )}
     >
-      {STATUS_LABEL[status]}
+      {t(`status.${status}`)}
     </span>
   );
 }
 
 export function PriorityBadge({ priority }: { priority: Priority }) {
+  const { t } = useTranslation();
   const styles: Record<Priority, string> = {
     alta: "bg-destructive/15 text-destructive border-destructive/40",
     media: "bg-[oklch(0.82_0.17_85_/_0.18)] text-[oklch(0.86_0.17_85)] border-[oklch(0.82_0.17_85_/_0.4)]",
@@ -33,7 +36,7 @@ export function PriorityBadge({ priority }: { priority: Priority }) {
         styles[priority],
       )}
     >
-      {PRIORITY_LABEL[priority]}
+      {t(`status.priority_${priority}`)}
     </span>
   );
 }

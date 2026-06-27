@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Trash2, Flame } from "lucide-react";
 import { useProductivity, computeStreak } from "@/lib/productivity-store";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/habitos")({
   head: () => ({ meta: [{ title: "Hábitos — Planeador" }, { name: "description", content: "Rastreador de hábitos diario con heatmap y rachas." }] }),
@@ -15,6 +16,7 @@ export const Route = createFileRoute("/_authenticated/habitos")({
 });
 
 function HabitsPage() {
+  const { t } = useTranslation();
   const { habits, toggleHabit, addHabit, removeHabit } = useProductivity();
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
@@ -25,33 +27,33 @@ function HabitsPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Hábitos</h2>
-          <p className="text-sm text-muted-foreground">Registro diario, racha y heatmap mensual.</p>
+          <h2 className="text-2xl font-semibold tracking-tight">{t("habits.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("habits.subtitle")}</p>
         </div>
         <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> Nuevo hábito</Button></DialogTrigger>
+          <DialogTrigger asChild><Button><Plus className="h-4 w-4" /> {t("habits.newHabit")}</Button></DialogTrigger>
           <DialogContent>
-            <DialogHeader><DialogTitle>Nuevo hábito</DialogTitle></DialogHeader>
+            <DialogHeader><DialogTitle>{t("habits.dialogTitle")}</DialogTitle></DialogHeader>
             <div className="space-y-3">
-              <div><Label>Nombre</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
+              <div><Label>{t("habits.name")}</Label><Input value={name} onChange={(e) => setName(e.target.value)} /></div>
             </div>
             <DialogFooter>
-              <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-              <Button onClick={() => { if (name) { addHabit({ name }); setName(""); setOpen(false); } }}>Guardar</Button>
+              <Button variant="outline" onClick={() => setOpen(false)}>{t("common.cancel")}</Button>
+              <Button onClick={() => { if (name) { addHabit({ name }); setName(""); setOpen(false); } }}>{t("common.save")}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Registro últimos 7 días</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("habits.last7days")}</CardTitle></CardHeader>
         <CardContent className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="text-xs text-muted-foreground">
-                <th className="text-left font-normal py-2">Hábito</th>
+                <th className="text-left font-normal py-2">{t("habits.habit")}</th>
                 {days.map((d) => <th key={d.toISOString()} className="font-normal w-12 py-2">{format(d, "EEE d")}</th>)}
-                <th className="font-normal py-2">Racha</th>
+                <th className="font-normal py-2">{t("habits.streak")}</th>
                 <th></th>
               </tr>
             </thead>
@@ -85,7 +87,7 @@ function HabitsPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Heatmap de consistencia — {format(new Date(), "MMMM yyyy")}</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("habits.heatmap", { month: format(new Date(), "MMMM yyyy") })}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           {habits.map((h) => (
             <div key={h.id}>

@@ -10,6 +10,7 @@ import { useActivities } from "@/lib/activities-store";
 import { STATUS_LABEL, type Status } from "@/lib/types";
 import { CheckCircle2, Clock, ListChecks, Loader2 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -28,6 +29,7 @@ const STATUS_COLORS: Record<Status, string> = {
 };
 
 function Dashboard() {
+  const { t } = useTranslation();
   const activities = useActivities((s) => s.activities);
 
   const total = activities.length;
@@ -63,17 +65,17 @@ function Dashboard() {
     .sort((a, b) => a.endDate.localeCompare(b.endDate));
 
   const metrics = [
-    { label: "Total Actividades", value: total, icon: ListChecks, color: "text-foreground" },
-    { label: "Actividades Completadas", value: completados, icon: CheckCircle2, color: "text-primary" },
-    { label: "Actividades En progreso", value: enProgreso, icon: Loader2, color: "text-[oklch(0.86_0.17_85)]" },
-    { label: "Actividades Pendientes", value: pendientes, icon: Clock, color: "text-muted-foreground" },
+    { label: t("dashboard.totalActivities"), value: total, icon: ListChecks, color: "text-foreground" },
+    { label: t("dashboard.completedActivities"), value: completados, icon: CheckCircle2, color: "text-primary" },
+    { label: t("dashboard.inProgressActivities"), value: enProgreso, icon: Loader2, color: "text-[oklch(0.86_0.17_85)]" },
+    { label: t("dashboard.pendingActivities"), value: pendientes, icon: Clock, color: "text-muted-foreground" },
   ];
 
   return (
     <div className="space-y-6">
       <div>
         <h2 className="text-2xl font-semibold tracking-tight">Dashboard</h2>
-        <p className="text-sm text-muted-foreground">Resumen de tu planeación</p>
+        <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
       </div>
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
@@ -92,7 +94,7 @@ function Dashboard() {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-base">Actividades por categoría</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t("dashboard.byCategory")}</CardTitle></CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={byCategory}>
@@ -109,7 +111,7 @@ function Dashboard() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">Distribución por estado</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t("dashboard.byStatus")}</CardTitle></CardHeader>
           <CardContent className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -129,10 +131,10 @@ function Dashboard() {
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Próximas a vencer (7 días)</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("dashboard.upcoming")}</CardTitle></CardHeader>
         <CardContent>
           {upcoming.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No hay actividades por vencer esta semana.</p>
+            <p className="text-sm text-muted-foreground">{t("dashboard.noUpcoming")}</p>
           ) : (
             <ul className="divide-y divide-border">
               {upcoming.map((a) => (
@@ -140,7 +142,7 @@ function Dashboard() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{a.name}</p>
                     <p className="text-xs text-muted-foreground">
-                      {a.assignee} · vence {format(parseISO(a.endDate), "dd MMM")}
+                      {a.assignee} · {t("dashboard.due")} {format(parseISO(a.endDate), "dd MMM")}
                     </p>
                   </div>
                   <StatusBadge status={a.status} />

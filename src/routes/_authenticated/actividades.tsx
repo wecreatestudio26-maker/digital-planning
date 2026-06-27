@@ -19,6 +19,7 @@ import { CATEGORIES, type Activity, type Status } from "@/lib/types";
 import { StatusBadge, PriorityBadge } from "@/components/StatusBadge";
 import { ActivityForm } from "@/components/ActivityForm";
 import { exportToPDF, exportToExcel } from "@/lib/export";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/actividades")({
   head: () => ({
@@ -31,6 +32,7 @@ export const Route = createFileRoute("/_authenticated/actividades")({
 });
 
 function ActivitiesPage() {
+  const { t } = useTranslation();
   const { activities, remove } = useActivities();
   const [search, setSearch] = useState("");
   const [statusF, setStatusF] = useState<string>("all");
@@ -59,8 +61,8 @@ function ActivitiesPage() {
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-semibold tracking-tight">Actividades</h2>
-          <p className="text-sm text-muted-foreground">{filtered.length} de {activities.length}</p>
+          <h2 className="text-2xl font-semibold tracking-tight">{t("activities.title")}</h2>
+          <p className="text-sm text-muted-foreground">{t("activities.counter", { filtered: filtered.length, total: activities.length })}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button variant="outline" onClick={() => exportToPDF(filtered)}>
@@ -70,7 +72,7 @@ function ActivitiesPage() {
             <FileSpreadsheet className="h-4 w-4" /> Excel
           </Button>
           <Button onClick={() => { setEditing(null); setFormOpen(true); }}>
-            <Plus className="h-4 w-4" /> Nueva actividad
+            <Plus className="h-4 w-4" /> {t("activities.newActivity")}
           </Button>
         </div>
       </div>
@@ -81,31 +83,31 @@ function ActivitiesPage() {
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               className="pl-9"
-              placeholder="Buscar actividad..."
+              placeholder={t("activities.searchPlaceholder")}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
             />
           </div>
           <Select value={statusF} onValueChange={setStatusF}>
-            <SelectTrigger><SelectValue placeholder="Estado" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("activities.statusPlaceholder")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los estados</SelectItem>
-              <SelectItem value="pendiente">Pendiente</SelectItem>
-              <SelectItem value="en_progreso">En progreso</SelectItem>
-              <SelectItem value="completado">Completado</SelectItem>
+              <SelectItem value="all">{t("activities.allStatuses")}</SelectItem>
+              <SelectItem value="pendiente">{t("activity.statuses.pendiente")}</SelectItem>
+              <SelectItem value="en_progreso">{t("activity.statuses.en_progreso")}</SelectItem>
+              <SelectItem value="completado">{t("activity.statuses.completado")}</SelectItem>
             </SelectContent>
           </Select>
           <Select value={categoryF} onValueChange={setCategoryF}>
-            <SelectTrigger><SelectValue placeholder="Categoría" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("activities.categoryPlaceholder")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todas las categorías</SelectItem>
+              <SelectItem value="all">{t("activities.allCategories")}</SelectItem>
               {CATEGORIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
             </SelectContent>
           </Select>
           <Select value={assigneeF} onValueChange={setAssigneeF}>
-            <SelectTrigger><SelectValue placeholder="Responsable" /></SelectTrigger>
+            <SelectTrigger><SelectValue placeholder={t("activities.assigneePlaceholder")} /></SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Todos los responsables</SelectItem>
+              <SelectItem value="all">{t("activities.allAssignees")}</SelectItem>
               {assignees.map((a) => <SelectItem key={a} value={a}>{a}</SelectItem>)}
             </SelectContent>
           </Select>
@@ -118,21 +120,21 @@ function ActivitiesPage() {
             <TableHeader>
               <TableRow>
                 <TableHead className="w-12">#</TableHead>
-                <TableHead>Actividad</TableHead>
-                <TableHead>Categoría</TableHead>
-                <TableHead>Inicio</TableHead>
-                <TableHead>Fin</TableHead>
-                <TableHead>Responsable</TableHead>
-                <TableHead>Prioridad</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="w-24 text-right">Acciones</TableHead>
+                <TableHead>{t("activities.colActivity")}</TableHead>
+                <TableHead>{t("activity.category")}</TableHead>
+                <TableHead>{t("activity.startDate")}</TableHead>
+                <TableHead>{t("activity.endDate")}</TableHead>
+                <TableHead>{t("activity.assignee")}</TableHead>
+                <TableHead>{t("activity.priority")}</TableHead>
+                <TableHead>{t("activity.status")}</TableHead>
+                <TableHead className="w-24 text-right">{t("activities.colActions")}</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={9} className="text-center text-muted-foreground py-10">
-                    Sin resultados
+                    {t("activities.noResults")}
                   </TableCell>
                 </TableRow>
               ) : filtered.map((a, i) => (
@@ -167,13 +169,13 @@ function ActivitiesPage() {
       <AlertDialog open={!!deleteId} onOpenChange={(o) => !o && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>¿Eliminar actividad?</AlertDialogTitle>
-            <AlertDialogDescription>Esta acción no se puede deshacer.</AlertDialogDescription>
+            <AlertDialogTitle>{t("activities.deleteTitle")}</AlertDialogTitle>
+            <AlertDialogDescription>{t("activities.deleteDesc")}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
             <AlertDialogAction onClick={() => { if (deleteId) remove(deleteId); setDeleteId(null); }}>
-              Eliminar
+              {t("common.delete")}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

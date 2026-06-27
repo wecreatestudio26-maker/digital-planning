@@ -9,6 +9,7 @@ import { Slider } from "@/components/ui/slider";
 import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Tooltip } from "recharts";
 import { useProductivity, weekStartStr } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/_authenticated/evaluacion")({
   head: () => ({ meta: [{ title: "Evaluación Semanal — Planeador" }, { name: "description", content: "Review semanal automática con score y tendencia." }] }),
@@ -16,6 +17,7 @@ export const Route = createFileRoute("/_authenticated/evaluacion")({
 });
 
 function EvalPage() {
+  const { t } = useTranslation();
   const { reviews, saveReview } = useProductivity();
   const { activities } = useActivities();
   const ws = weekStartStr();
@@ -36,41 +38,41 @@ function EvalPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-semibold tracking-tight">Evaluación semanal</h2>
+        <h2 className="text-2xl font-semibold tracking-tight">{t("evaluation.title")}</h2>
         <p className="text-sm text-muted-foreground">
-          {isSunday ? "Es domingo — momento perfecto para revisar la semana." : "Reflexiona sobre tu semana."}
+          {isSunday ? t("evaluation.subtitleSunday") : t("evaluation.subtitleDefault")}
         </p>
       </div>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Semana del {ws}</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("evaluation.weekOf", { week: ws })}</CardTitle></CardHeader>
         <CardContent className="space-y-4">
           <div className="text-sm text-muted-foreground">
-            Resumen automático: <span className="text-foreground font-medium">{completed}</span> tareas completadas en total.
+            {t("evaluation.autoSummary")} <span className="text-foreground font-medium">{completed}</span> {t("evaluation.tasksCompleted")}
           </div>
           <div>
-            <Label>¿Qué salió bien?</Label>
+            <Label>{t("evaluation.whatWentWell")}</Label>
             <Textarea value={good} onChange={(e) => setGood(e.target.value)} rows={3} />
           </div>
           <div>
-            <Label>¿Qué mejorar?</Label>
+            <Label>{t("evaluation.whatToImprove")}</Label>
             <Textarea value={improve} onChange={(e) => setImprove(e.target.value)} rows={3} />
           </div>
           <div>
-            <Label>Puntuación: {score}/10</Label>
+            <Label>{t("evaluation.score", { score })}</Label>
             <Slider value={[score]} onValueChange={([v]) => setScore(v)} min={1} max={10} step={1} className="mt-2" />
           </div>
           <Button onClick={() => saveReview({ weekStart: ws, good, improve, score, completedCount: completed })}>
-            Guardar evaluación
+            {t("evaluation.saveReview")}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Tendencia de puntuación</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("evaluation.scoreTrend")}</CardTitle></CardHeader>
         <CardContent className="h-64">
           {trend.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Aún no hay evaluaciones registradas.</p>
+            <p className="text-sm text-muted-foreground">{t("evaluation.noReviews")}</p>
           ) : (
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={trend}>
@@ -86,19 +88,19 @@ function EvalPage() {
       </Card>
 
       <Card>
-        <CardHeader><CardTitle className="text-base">Historial</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-base">{t("evaluation.history")}</CardTitle></CardHeader>
         <CardContent className="space-y-3">
           {[...reviews].sort((a, b) => b.weekStart.localeCompare(a.weekStart)).slice(0, 8).map((r) => (
             <div key={r.id} className="border-b border-border pb-3 last:border-0">
               <div className="flex justify-between items-center mb-1">
-                <span className="font-medium">Semana {r.weekStart}</span>
-                <span className="text-sm">⭐ {r.score}/10 · {r.completedCount} tareas</span>
+                <span className="font-medium">{t("evaluation.weekLabel", { week: r.weekStart })}</span>
+                <span className="text-sm">⭐ {r.score}/10 · {t("evaluation.tasksCount", { count: r.completedCount })}</span>
               </div>
               {r.good && <p className="text-sm"><span className="text-primary">+</span> {r.good}</p>}
               {r.improve && <p className="text-sm"><span className="text-orange-400">△</span> {r.improve}</p>}
             </div>
           ))}
-          {reviews.length === 0 && <p className="text-sm text-muted-foreground">Sin historial.</p>}
+          {reviews.length === 0 && <p className="text-sm text-muted-foreground">{t("evaluation.noHistory")}</p>}
         </CardContent>
       </Card>
     </div>

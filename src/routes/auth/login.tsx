@@ -9,12 +9,14 @@ import { useAuth } from "@/hooks/useAuth";
 import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
 import { lovable } from "@/integrations/lovable";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/auth/login")({
   component: LoginPage,
 });
 
 function LoginPage() {
+  const { t } = useTranslation();
   const { signIn } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
@@ -37,18 +39,18 @@ function LoginPage() {
     const result = await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin,
     });
-    if (result.error) toast.error("No se pudo iniciar sesión con Google");
+    if (result.error) toast.error(t("auth.googleError"));
   }
 
   return (
-    <AuthCard title="Iniciar sesión" subtitle="Accede a tu cuenta">
+    <AuthCard title={t("auth.loginTitle")} subtitle={t("auth.loginSubtitle")}>
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="email" required />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="password">Contraseña</Label>
+          <Label htmlFor="password">{t("auth.password")}</Label>
           <div className="relative">
             <Input
               id="password"
@@ -63,35 +65,35 @@ function LoginPage() {
               type="button"
               onClick={() => setShowPass((s) => !s)}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-              aria-label={showPass ? "Ocultar contraseña" : "Mostrar contraseña"}
+              aria-label={showPass ? t("auth.hidePassword") : t("auth.showPassword")}
             >
               {showPass ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
         </div>
         <Button type="submit" className="w-full" disabled={!valid || loading}>
-          {loading ? "Entrando..." : "Iniciar sesión"}
+          {loading ? t("auth.signingIn") : t("auth.loginTitle")}
         </Button>
       </form>
 
       <div className="my-4 flex items-center gap-2">
         <div className="h-px flex-1 bg-border" />
-        <span className="text-xs text-muted-foreground">o</span>
+        <span className="text-xs text-muted-foreground">{t("auth.or")}</span>
         <div className="h-px flex-1 bg-border" />
       </div>
 
       <Button type="button" variant="outline" className="w-full" onClick={onGoogle}>
-        Continuar con Google
+        {t("auth.continueWithGoogle")}
       </Button>
 
       <div className="mt-4 flex flex-col gap-2 text-center text-sm">
         <Link to="/auth/forgot-password" className="text-primary hover:underline">
-          ¿Olvidaste tu contraseña?
+          {t("auth.forgotPassword")}
         </Link>
         <span className="text-muted-foreground">
-          ¿No tienes cuenta?{" "}
+          {t("auth.noAccount")}{" "}
           <Link to="/auth/register" className="text-primary hover:underline">
-            Regístrate
+            {t("auth.register")}
           </Link>
         </span>
       </div>
