@@ -5,12 +5,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
+import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/auth/forgot-password")({
   component: ForgotPage,
 });
 
 function ForgotPage() {
+  const { t } = useTranslation();
   const { resetPassword } = useAuth();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
@@ -26,31 +28,31 @@ function ForgotPage() {
 
   if (sent) {
     return (
-      <AuthCard title="Revisa tu email">
+      <AuthCard title={t("auth.checkEmailTitle")}>
         <p className="text-sm text-muted-foreground text-center">
-          Si existe una cuenta con ese email, te enviamos un enlace para restablecer tu contraseña.
+          {t("auth.resetEmailSent")}
         </p>
         <Link to="/auth/login" className="mt-4 block text-center text-sm text-primary hover:underline">
-          Volver a iniciar sesión
+          {t("auth.backToLogin")}
         </Link>
       </AuthCard>
     );
   }
 
   return (
-    <AuthCard title="Recuperar contraseña" subtitle="Te enviaremos un enlace para restablecerla">
+    <AuthCard title={t("auth.forgotTitle")} subtitle={t("auth.forgotSubtitle")}>
       <form onSubmit={onSubmit} className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email">{t("auth.email")}</Label>
           <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <Button type="submit" className="w-full" disabled={!email || loading}>
-          {loading ? "Enviando..." : "Enviar enlace"}
+          {loading ? t("auth.sending") : t("auth.sendLink")}
         </Button>
       </form>
       <div className="mt-4 text-center text-sm">
         <Link to="/auth/login" className="text-primary hover:underline">
-          Volver
+          {t("auth.back")}
         </Link>
       </div>
     </AuthCard>
