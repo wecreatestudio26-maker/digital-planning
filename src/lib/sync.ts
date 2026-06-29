@@ -6,16 +6,13 @@ import { useProductivity } from "./productivity-store";
 import { useExtra } from "./extra-store";
 import { loadUserState, saveUserState } from "./sync.functions";
 
-const STORES = {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const STORES: Record<string, any> = {
   activities: useActivities,
   productivity: useProductivity,
   extra: useExtra,
-} as const;
+};
 
-type StoreKey = keyof typeof STORES;
-
-// Fields per store that are persisted state (not actions).
-// We snapshot the entire state object minus functions.
 function pickData(state: Record<string, unknown>) {
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(state)) {
@@ -26,17 +23,19 @@ function pickData(state: Record<string, unknown>) {
 
 export function collectSnapshot(): Record<string, unknown> {
   const snap: Record<string, unknown> = {};
-  for (const key of Object.keys(STORES) as StoreKey[]) {
+  for (const key of Object.keys(STORES)) {
     snap[key] = pickData(STORES[key].getState() as Record<string, unknown>);
   }
   return snap;
 }
 
-export function applySnapshot(payload: Record<string, unknown>) {
-  for (const key of Object.keys(STORES) as StoreKey[]) {
-    const data = payload[key];
+export function applySnapshot(payload: unknown) {
+  if (!payload || typeof payload !== "object") return;
+  const p = payload as Record<string, unknown>;
+  for (const key of Object.keys(STORES)) {
+    const data = p[key];
     if (data && typeof data === "object") {
-      STORES[key].setState(data as never, false);
+      STORES[key].setState(data);
     }
   }
 }
@@ -44,6 +43,9 @@ export function applySnapshot(payload: Record<string, unknown>) {
 type Status = "idle" | "saving" | "loading" | "saved" | "error";
 
 let loadedOnce = false;
+
+type LoadResult = { payload: unknown; version: number; updatedAt: string } | null;
+type SaveResult = { version: number; updatedAt: string };
 
 export function useCloudSync() {
   const save = useServerFn(saveUserState);
@@ -57,7 +59,7 @@ export function useCloudSync() {
     setStatus("saving");
     try {
       const payload = collectSnapshot();
-      const res = await save({ data: { payload, version: versionRef.current + 1 } });
+      const res = (await save({ data: { payload, version: versionRef.current + 1 } })) as SaveResult;
       versionRef.current = res.version;
       setLastSavedAt(res.updatedAt);
       setIsDirty(false);
@@ -73,12 +75,11 @@ export function useCloudSync() {
   const doLoad = useCallback(async () => {
     setStatus("loading");
     try {
-      const res = await load();
+      const res = (await load()) as LoadResult;
       if (res) {
         applySnapshot(res.payload);
         versionRef.current = res.version;
         setLastSavedAt(res.updatedAt);
-        toast.success("Datos cargados desde la nube");
       }
       setIsDirty(false);
       setStatus("idle");
@@ -88,17 +89,15 @@ export function useCloudSync() {
     }
   }, [load]);
 
-  // Subscribe to stores for dirty detection
   useEffect(() => {
-    const unsubs = (Object.keys(STORES) as StoreKey[]).map((k) =>
+    const unsubs = Object.keys(STORES).map((k) =>
       STORES[k].subscribe(() => {
         if (loadedOnce) setIsDirty(true);
       }),
     );
-    return () => unsubs.forEach((u) => u());
+    return () => unsubs.forEach((u: () => void) => u());
   }, []);
 
-  // Auto-load once per session
   useEffect(() => {
     if (loadedOnce) return;
     loadedOnce = true;

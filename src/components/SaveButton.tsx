@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Cloud, CloudCheck, CloudOff, Loader2 } from "lucide-react";
 import { useCloudSync } from "@/lib/sync";
 import { useTranslation } from "react-i18next";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, type Locale } from "date-fns";
 import { es, enUS, fr, it } from "date-fns/locale";
 
 const LOCALES: Record<string, Locale> = { es, en: enUS, fr, it };
