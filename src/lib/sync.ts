@@ -44,7 +44,7 @@ type Status = "idle" | "saving" | "loading" | "saved" | "error";
 
 let loadedOnce = false;
 
-type LoadResult = { payload: unknown; version: number; updatedAt: string } | null;
+type LoadResult = { payloadJson: string; version: number; updatedAt: string } | null;
 type SaveResult = { version: number; updatedAt: string };
 
 export function useCloudSync() {
@@ -59,7 +59,9 @@ export function useCloudSync() {
     setStatus("saving");
     try {
       const payload = collectSnapshot();
-      const res = (await save({ data: { payload, version: versionRef.current + 1 } })) as SaveResult;
+      const res = (await save({
+        data: { payloadJson: JSON.stringify(payload), version: versionRef.current + 1 },
+      })) as SaveResult;
       versionRef.current = res.version;
       setLastSavedAt(res.updatedAt);
       setIsDirty(false);
@@ -77,7 +79,7 @@ export function useCloudSync() {
     try {
       const res = (await load()) as LoadResult;
       if (res) {
-        applySnapshot(res.payload);
+        applySnapshot(JSON.parse(res.payloadJson));
         versionRef.current = res.version;
         setLastSavedAt(res.updatedAt);
       }

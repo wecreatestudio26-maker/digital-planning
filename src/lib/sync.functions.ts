@@ -1,9 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
-type Snapshot = { [key: string]: unknown };
-
-type SaveInput = { payload: Snapshot; version: number };
+type SaveInput = { payloadJson: string; version: number };
 
 export const loadUserState = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
@@ -16,7 +14,7 @@ export const loadUserState = createServerFn({ method: "GET" })
     if (error) throw new Error(error.message);
     if (!data) return null;
     return {
-      payload: data.payload as unknown,
+      payloadJson: JSON.stringify(data.payload ?? {}),
       version: data.version as number,
       updatedAt: data.updated_at as string,
     };
@@ -32,7 +30,7 @@ export const saveUserState = createServerFn({ method: "POST" })
         {
           user_id: context.userId,
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          payload: data.payload as any,
+          payload: JSON.parse(data.payloadJson) as any,
           version: data.version,
           updated_at: new Date().toISOString(),
         },
