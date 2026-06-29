@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useOrgRole } from "@/hooks/useOrgRole";
 import type { ModuleKey } from "@/lib/permissions";
+import { SaveButton } from "@/components/SaveButton";
 
 type Item = { titleKey: string; url: string; icon: any; module?: ModuleKey };
 
@@ -82,6 +83,9 @@ export function AppSidebar() {
         })}
       </SidebarContent>
       <SidebarFooter>
+        <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
+          <SaveButton />
+        </div>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip={t("sidebar.home")}>

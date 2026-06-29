@@ -1,32 +1,56 @@
+# Guardar en la nube por usuario
 
-## Objetivo
+## Qué obtendrás
 
-Hoy solo unas pocas vistas usan `useTranslation`. Al cambiar idioma, la mayor parte de la app sigue en español. Vamos a internacionalizar todos los textos visibles para que el cambio entre **es · en · fr · it** sea completo.
+- Un botón **Guardar** visible en la barra superior (junto al selector de idioma).
+- Al pulsarlo, **toda tu información** de la app (actividades, hábitos, tiempo, presupuesto, riesgos, evaluaciones, reglas, recordatorios, plantillas, equipo, reuniones, etc.) se guarda en tu cuenta en la nube.
+- Cuando vuelves a entrar desde **cualquier dispositivo**, la app **carga automáticamente** tu última versión guardada y puedes continuar donde lo dejaste.
+- Indicador visual: "Guardado hace X minutos" / "Cambios sin guardar" / spinner mientras sincroniza.
+- Opcional: **auto-guardado** cada vez que cambias algo (debounce 5 s), además del botón manual.
 
-## Alcance
+## Cómo funciona (resumen técnico)
 
-Páginas y componentes con texto en duro a traducir:
+Toda la app ya usa Zustand con `persist` (localStorage). En vez de migrar cada store a su propia tabla SQL (semanas de trabajo y riesgo de romper la UI), uso un enfoque **snapshot JSON por usuario**:
 
-- Rutas autenticadas (16): `dashboard`, `actividades`, `gantt`, `riesgos`, `presupuesto`, `habitos`, `tiempo`, `evaluacion`, `enfoque`, `equipo`, `carga`, `reuniones`, `plantillas`, `recordatorios`, `auto-estados`, `reglas`.
-- Flujo de auth: `login`, `register`, `forgot-password`, `reset-password`, `check-email`, `invite.$token`.
-- Componentes compartidos: `StatusBadge`, `AppSidebar` (textos restantes), `AuthCard`, mensajes de toast/validación frecuentes.
+1. **Nueva tabla** `user_app_state` en la base de datos:
+   - `user_id` (PK, FK → auth.users)
+   - `payload` (jsonb) — contiene el snapshot serializado de todos los stores
+   - `version` (int) — para detectar conflictos
+   - `updated_at` (timestamptz)
+   - RLS estricto: cada usuario solo lee/escribe su propia fila.
+   - GRANTs a `authenticated`.
 
-Fuera de alcance: contenido generado por el usuario (nombres de actividades, categorías, miembros), datos de BD, y SEO/meta tags por ruta (se mantienen como están).
+2. **Server functions** (`src/lib/sync.functions.ts`) con `requireSupabaseAuth`:
+   - `saveUserState({ payload, version })` → upsert.
+   - `loadUserState()` → devuelve `{ payload, version, updatedAt }` o `null`.
 
-## Enfoque
+3. **Cliente** (`src/lib/sync.ts`):
+   - `collectSnapshot()` lee los 3 stores Zustand (`activities`, `productivity`, `extra`) y los empaqueta.
+   - `applySnapshot(payload)` rehidrata los stores con `setAll`.
+   - Hook `useCloudSync()` expone `{ save, load, status, lastSavedAt, isDirty }`.
 
-1. **Ampliar los diccionarios** `src/i18n/locales/{es,en,fr,it}.json` con namespaces por página: `dashboard.*`, `activities.*`, `gantt.*`, `risks.*`, `budget.*`, `habits.*`, `time.*`, `evaluation.*`, `focus.*`, `team.*`, `workload.*`, `meetings.*`, `templates.*`, `reminders.*`, `autostates.*`, `rules.*`, `auth.*`, `status.*`, `toast.*`.
-2. **Reemplazar literales** en cada archivo por `t("namespace.clave")` usando `const { t } = useTranslation()`. Mantener exactamente la misma UI, solo cambiar la fuente del texto.
-3. **Pluralización y variables** con interpolación de i18next (`{{count}}`, `{{name}}`) donde aplique (p. ej. "5 actividades", "Hola, {{name}}").
-4. **Verificación**: revisar dashboard tras los cambios cambiando idioma desde el `LanguageSwitcher` y confirmar que no queden cadenas en español al elegir en / fr / it.
+4. **Botón Guardar** en `AppSidebar` / topbar:
+   - Estados: idle / saving / saved / error / dirty.
+   - Icono `Cloud` / `CloudOff` / `CloudCheck` con texto.
+   - Toast en éxito y error.
 
-## Detalles técnicos
+5. **Carga inicial**: en `_authenticated/route.tsx` (o un wrapper provider) después de confirmar sesión, llamar `load()` una vez y aplicar el snapshot si la versión remota es más nueva que la local.
 
-- Las 4 claves de cada string se añaden a la vez en los 4 JSON para mantenerlos sincronizados.
-- Las traducciones a en / fr / it se generan a partir del texto en español existente; el usuario podrá ajustarlas luego si quiere afinar tono.
-- No se toca la lógica de negocio, ni server functions, ni la BD. Solo capa de presentación.
-- No se reorganiza la estructura de carpetas ni el routing.
+6. **Detección de cambios**: suscribirse a los stores con `store.subscribe` y marcar `isDirty = true` para activar el botón visualmente.
 
-## Entrega
+## Limitaciones honestas
 
-Dado el volumen (≈16 páginas + flujos de auth), lo haré en una sola tanda de cambios coordinados sobre los JSON y los componentes, sin pasos intermedios visibles para ti. Al terminar, la app quedará totalmente traducida en los 4 idiomas soportados.
+- Es un **snapshot completo**, no edición colaborativa en tiempo real. Si abres la app en dos dispositivos y editas en ambos, gana el último que guarde (te mostraré aviso si la versión remota cambió).
+- El payload puede crecer; sin problema hasta ~1 MB (miles de actividades).
+- Migrar a tablas relacionales por entidad se puede hacer después si lo necesitas (por ejemplo, para filtros server-side o compartir datos entre usuarios).
+
+## Pasos de implementación
+
+1. Migración SQL: tabla `user_app_state` + RLS + GRANTs.
+2. `src/lib/sync.functions.ts` con `saveUserState` / `loadUserState`.
+3. `src/lib/sync.ts` con `collectSnapshot` / `applySnapshot` / `useCloudSync`.
+4. Botón `SaveButton.tsx` integrado en `AppSidebar`.
+5. Carga inicial al entrar a `/_authenticated/*`.
+6. Traducciones del botón (es/en/fr/it).
+
+¿Procedo con este plan, o prefieres que active **auto-guardado silencioso** (sin botón visible) en vez del botón manual?
