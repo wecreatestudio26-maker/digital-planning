@@ -1,56 +1,68 @@
-# Guardar en la nube por usuario
+# Sistema de códigos de validación (estilo Home Budget)
 
-## Qué obtendrás
+Replicar el flujo de Home Budget en este proyecto: códigos XXXX-XXXX-XXXX de uso único, panel admin, webhook Hotmart y compatibilidad con licencias Gumroad.
 
-- Un botón **Guardar** visible en la barra superior (junto al selector de idioma).
-- Al pulsarlo, **toda tu información** de la app (actividades, hábitos, tiempo, presupuesto, riesgos, evaluaciones, reglas, recordatorios, plantillas, equipo, reuniones, etc.) se guarda en tu cuenta en la nube.
-- Cuando vuelves a entrar desde **cualquier dispositivo**, la app **carga automáticamente** tu última versión guardada y puedes continuar donde lo dejaste.
-- Indicador visual: "Guardado hace X minutos" / "Cambios sin guardar" / spinner mientras sincroniza.
-- Opcional: **auto-guardado** cada vez que cambias algo (debounce 5 s), además del botón manual.
+## 1. Base de datos
 
-## Cómo funciona (resumen técnico)
+Nueva tabla `access_codes`:
+- `code` (texto, único, formato `XXXX-XXXX-XXXX`)
+- `source` (`hotmart` | `gumroad` | `manual`)
+- `email_buyer` (correo del comprador, opcional para manual)
+- `status` (`active` | `redeemed` | `revoked`)
+- `redeemed_by_user_id` (uuid, null hasta canje)
+- `redeemed_at`, `created_at`, `updated_at`
+- `metadata` jsonb (payload original de Hotmart / Gumroad)
 
-Toda la app ya usa Zustand con `persist` (localStorage). En vez de migrar cada store a su propia tabla SQL (semanas de trabajo y riesgo de romper la UI), uso un enfoque **snapshot JSON por usuario**:
+RLS:
+- Solo admin puede ver/gestionar todos.
+- Función `redeem_access_code(code, user_id)` `SECURITY DEFINER` que marca el código como canjeado atomically.
+- `GRANT` correspondientes.
 
-1. **Nueva tabla** `user_app_state` en la base de datos:
-   - `user_id` (PK, FK → auth.users)
-   - `payload` (jsonb) — contiene el snapshot serializado de todos los stores
-   - `version` (int) — para detectar conflictos
-   - `updated_at` (timestamptz)
-   - RLS estricto: cada usuario solo lee/escribe su propia fila.
-   - GRANTs a `authenticated`.
+Se conserva `gumroad_licenses` existente pero el registro nuevo pasa a usar `access_codes` (los códigos Gumroad se insertan al momento de canjear vía verificación API).
 
-2. **Server functions** (`src/lib/sync.functions.ts`) con `requireSupabaseAuth`:
-   - `saveUserState({ payload, version })` → upsert.
-   - `loadUserState()` → devuelve `{ payload, version, updatedAt }` o `null`.
+## 2. Registro con código
 
-3. **Cliente** (`src/lib/sync.ts`):
-   - `collectSnapshot()` lee los 3 stores Zustand (`activities`, `productivity`, `extra`) y los empaqueta.
-   - `applySnapshot(payload)` rehidrata los stores con `setAll`.
-   - Hook `useCloudSync()` expone `{ save, load, status, lastSavedAt, isDirty }`.
+Modificar `src/routes/auth/register.tsx` + `src/lib/gumroad.functions.ts`:
+- Un solo campo "Código de acceso".
+- Nueva server function `redeemAccessCode`:
+  1. Si el formato es `XXXX-XXXX-XXXX` → buscar en `access_codes` (Hotmart o manual). Debe estar `active`.
+  2. Si no → tratarlo como licencia Gumroad: verificar contra API Gumroad (lógica existente) e insertar/actualizar fila en `access_codes` con `source='gumroad'` marcada como redeemed en el mismo paso.
+  3. Crear usuario con `supabaseAdmin.auth.admin.createUser` (email_confirm true).
+  4. Marcar código `redeemed`.
 
-4. **Botón Guardar** en `AppSidebar` / topbar:
-   - Estados: idle / saving / saved / error / dirty.
-   - Icono `Cloud` / `CloudOff` / `CloudCheck` con texto.
-   - Toast en éxito y error.
+## 3. Webhook Hotmart
 
-5. **Carga inicial**: en `_authenticated/route.tsx` (o un wrapper provider) después de confirmar sesión, llamar `load()` una vez y aplicar el snapshot si la versión remota es más nueva que la local.
+Nueva ruta pública `src/routes/api/public/hotmart-webhook.ts`:
+- Verificar `hottok` (secreto de Hotmart) via header/body.
+- En eventos `PURCHASE_APPROVED` / `PURCHASE_COMPLETE`:
+  - Generar código único `XXXX-XXXX-XXXX`.
+  - Insertar en `access_codes` (`source='hotmart'`, email del comprador).
+  - Enviar correo vía Resend (conector ya instalado) desde `noreply@we-create-studio.com` con el código.
+- Idempotente por `transaction_id` (guardado en metadata).
 
-6. **Detección de cambios**: suscribirse a los stores con `store.subscribe` y marcar `isDirty = true` para activar el botón visualmente.
+Secretos requeridos: `HOTMART_HOTTOK` (usuario lo aporta).
 
-## Limitaciones honestas
+## 4. Panel admin
 
-- Es un **snapshot completo**, no edición colaborativa en tiempo real. Si abres la app en dos dispositivos y editas en ambos, gana el último que guarde (te mostraré aviso si la versión remota cambió).
-- El payload puede crecer; sin problema hasta ~1 MB (miles de actividades).
-- Migrar a tablas relacionales por entidad se puede hacer después si lo necesitas (por ejemplo, para filtros server-side o compartir datos entre usuarios).
+Nueva ruta `/_authenticated/admin/codigos.tsx`:
+- Visible solo si `user.email === 'wecreatestudio26@gmail.com'` (además del rol admin).
+- Ítem en `AppSidebar` con icono 🔑, condicionado por el email.
+- Funcionalidades:
+  - Listar códigos (filtro por estado, source, buscar por email/código).
+  - Generar código manual (con email opcional).
+  - Revocar código.
+  - Reenviar código por correo.
+- Server functions con `requireSupabaseAuth` + comprobación email/rol.
 
-## Pasos de implementación
+## 5. Detalles técnicos
 
-1. Migración SQL: tabla `user_app_state` + RLS + GRANTs.
-2. `src/lib/sync.functions.ts` con `saveUserState` / `loadUserState`.
-3. `src/lib/sync.ts` con `collectSnapshot` / `applySnapshot` / `useCloudSync`.
-4. Botón `SaveButton.tsx` integrado en `AppSidebar`.
-5. Carga inicial al entrar a `/_authenticated/*`.
-6. Traducciones del botón (es/en/fr/it).
+- Generación de código: 12 chars base32 sin caracteres ambiguos (`ABCDEFGHJKLMNPQRSTUVWXYZ23456789`), formateado como 4-4-4.
+- Envío de correos: usar gateway Resend (`RESEND_API_KEY` ya configurado). Plantilla HTML simple con branding.
+- URL pública estable para el webhook Hotmart: `https://project--c1a07425-ecde-4430-84f5-193060030c23.lovable.app/api/public/hotmart-webhook`.
 
-¿Procedo con este plan, o prefieres que active **auto-guardado silencioso** (sin botón visible) en vez del botón manual?
+## Lo que necesitas proporcionar
+
+1. **`HOTMART_HOTTOK`** — token secreto de tu producto en Hotmart (Herramientas → Webhook). Te lo pediré por el formulario seguro.
+2. Confirmar que el dominio `we-create-studio.com` está verificado en Resend para poder enviar desde `noreply@…`. Si aún no lo está, te indico cómo verificarlo.
+
+¿Procedo?
