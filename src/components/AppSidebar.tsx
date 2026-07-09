@@ -2,15 +2,18 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet,
-  Users, Gauge, Mic, FileStack, Bell, Settings2, Workflow, Home,
+  Users, Gauge, Mic, FileStack, Bell, Settings2, Workflow, Home, KeyRound,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useOrgRole } from "@/hooks/useOrgRole";
+import { useAuth } from "@/hooks/useAuth";
 import type { ModuleKey } from "@/lib/permissions";
 import { SaveButton } from "@/components/SaveButton";
+
+const SUPER_ADMIN_EMAIL = "wecreatestudio26@gmail.com";
 
 type Item = { titleKey: string; url: string; icon: any; module?: ModuleKey };
 
@@ -44,6 +47,8 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const org = useOrgRole();
+  const { user } = useAuth();
+  const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
