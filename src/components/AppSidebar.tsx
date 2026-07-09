@@ -86,6 +86,27 @@ export function AppSidebar() {
             </SidebarGroup>
           );
         })}
+        {isSuperAdmin && (
+          <SidebarGroup>
+            <SidebarGroupLabel>Admin</SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={pathname.startsWith("/admin/codigos")}
+                    tooltip="Códigos"
+                  >
+                    <Link to="/admin/codigos">
+                      <KeyRound />
+                      <span>🔑 Códigos</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
       <SidebarFooter>
         <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
