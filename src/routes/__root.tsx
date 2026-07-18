@@ -24,11 +24,17 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
+  const navigate = useNavigate();
+  useEffect(() => {
+    const t = setTimeout(() => navigate({ to: "/", replace: true }), 3000);
+    return () => clearTimeout(t);
+  }, [navigate]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center">
+      <div className="max-w-md text-center space-y-2">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <p className="mt-2 text-sm text-muted-foreground">Página no encontrada</p>
+        <p className="text-sm text-muted-foreground">Página no encontrada</p>
+        <p className="text-xs text-muted-foreground">Redirigiendo a la página principal…</p>
       </div>
     </div>
   );
