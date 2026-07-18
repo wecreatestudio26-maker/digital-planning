@@ -2,18 +2,14 @@ import { Link, useRouterState } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
 import {
   LayoutDashboard, Calendar, ListTodo, CalendarCheck2, GanttChartSquare, ShieldAlert, Wallet,
-  Users, Gauge, Mic, FileStack, Bell, Settings2, Workflow, Home, KeyRound,
+  Users, Gauge, Mic, FileStack, Bell, Settings2, Workflow, Home,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarFooter, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarHeader, SidebarMenu, SidebarMenuButton, SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useOrgRole } from "@/hooks/useOrgRole";
-import { useAuth } from "@/hooks/useAuth";
 import type { ModuleKey } from "@/lib/permissions";
-import { SaveButton } from "@/components/SaveButton";
-
-const SUPER_ADMIN_EMAIL = "wecreatestudio26@gmail.com";
 
 type Item = { titleKey: string; url: string; icon: any; module?: ModuleKey };
 
@@ -47,8 +43,6 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const org = useOrgRole();
-  const { user } = useAuth();
-  const isSuperAdmin = user?.email?.toLowerCase() === SUPER_ADMIN_EMAIL;
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader>
@@ -86,32 +80,8 @@ export function AppSidebar() {
             </SidebarGroup>
           );
         })}
-        {isSuperAdmin && (
-          <SidebarGroup>
-            <SidebarGroupLabel>Admin</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={pathname.startsWith("/admin/codigos")}
-                    tooltip="Códigos"
-                  >
-                    <Link to="/admin/codigos">
-                      <KeyRound />
-                      <span>🔑 Códigos</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        )}
       </SidebarContent>
       <SidebarFooter>
-        <div className="px-2 pb-2 group-data-[collapsible=icon]:hidden">
-          <SaveButton />
-        </div>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild tooltip={t("sidebar.home")}>

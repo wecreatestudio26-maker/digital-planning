@@ -24,17 +24,11 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Toaster } from "@/components/ui/sonner";
 
 function NotFoundComponent() {
-  const navigate = useNavigate();
-  useEffect(() => {
-    const t = setTimeout(() => navigate({ to: "/", replace: true }), 3000);
-    return () => clearTimeout(t);
-  }, [navigate]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center space-y-2">
+      <div className="max-w-md text-center">
         <h1 className="text-7xl font-bold text-foreground">404</h1>
-        <p className="text-sm text-muted-foreground">Página no encontrada</p>
-        <p className="text-xs text-muted-foreground">Redirigiendo a la página principal…</p>
+        <p className="mt-2 text-sm text-muted-foreground">Página no encontrada</p>
       </div>
     </div>
   );
@@ -42,40 +36,19 @@ function NotFoundComponent() {
 
 function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
   const router = useRouter();
-  const navigate = useNavigate();
   useEffect(() => {
     reportLovableError(error, { boundary: "tanstack_root_error_component" });
-    console.error("[GlobalErrorBoundary]", error);
-    const timer = setTimeout(() => {
-      reset();
-      navigate({ to: "/", replace: true });
-    }, 4000);
-    return () => clearTimeout(timer);
-  }, [error, navigate, reset]);
+  }, [error]);
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
-      <div className="max-w-md text-center space-y-4">
-        <h1 className="text-2xl font-semibold text-foreground">Algo salió mal</h1>
-        <p className="text-sm text-muted-foreground break-words">
-          {error?.message || "Error inesperado en la aplicación."}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          Serás redirigido a la página principal en unos segundos…
-        </p>
-        <div className="flex gap-2 justify-center">
-          <button
-            onClick={() => { router.invalidate(); reset(); }}
-            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
-          >
-            Reintentar
-          </button>
-          <button
-            onClick={() => { reset(); navigate({ to: "/", replace: true }); }}
-            className="rounded-md border border-border px-4 py-2 text-sm font-medium"
-          >
-            Ir al inicio
-          </button>
-        </div>
+      <div className="max-w-md text-center">
+        <h1 className="text-xl font-semibold">Algo salió mal</h1>
+        <button
+          onClick={() => { router.invalidate(); reset(); }}
+          className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
+          Reintentar
+        </button>
       </div>
     </div>
   );

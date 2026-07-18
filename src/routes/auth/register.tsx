@@ -10,7 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { useAuth } from "@/hooks/useAuth";
 import { translateAuthError } from "@/lib/auth-errors";
 import { toast } from "sonner";
-import { redeemAccessCode } from "@/lib/access-codes.functions";
+import { redeemGumroadLicense } from "@/lib/gumroad.functions";
 import { useTranslation } from "react-i18next";
 
 export const Route = createFileRoute("/auth/register")({
@@ -23,7 +23,7 @@ function RegisterPage() {
   const { t } = useTranslation();
   const { signIn } = useAuth();
   const navigate = useNavigate();
-  const redeem = useServerFn(redeemAccessCode);
+  const redeem = useServerFn(redeemGumroadLicense);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [licenseKey, setLicenseKey] = useState("");
@@ -61,7 +61,7 @@ function RegisterPage() {
         data: {
           fullName: fullName.trim(),
           email: email.trim(),
-          code: licenseKey.trim(),
+          licenseKey: licenseKey.trim(),
           password,
         },
       });
