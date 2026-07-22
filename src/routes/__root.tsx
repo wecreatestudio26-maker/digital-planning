@@ -22,6 +22,7 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Toaster } from "@/components/ui/sonner";
+import { HeaderActions } from "@/components/HeaderActions";
 
 function NotFoundComponent() {
   return (
