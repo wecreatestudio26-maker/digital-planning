@@ -5,14 +5,18 @@ import {
   isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths,
 } from "date-fns";
 import { es, enUS, fr, it, type Locale } from "date-fns/locale";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 import { useActivities } from "@/lib/activities-store";
 import { cn } from "@/lib/utils";
-import type { Activity, Status } from "@/lib/types";
+import type { Activity, Status, Priority } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/calendario")({
   head: () => ({
