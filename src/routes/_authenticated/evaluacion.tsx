@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { LineChart, Line, XAxis, YAxis, ResponsiveContainer, CartesianGrid, Tooltip } from "recharts";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { ChartFrame, SafeTooltip, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
 import { useProductivity, weekStartStr } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
 import { useTranslation } from "react-i18next";
@@ -70,20 +71,16 @@ function EvalPage() {
 
       <Card>
         <CardHeader><CardTitle className="text-base">{t("evaluation.scoreTrend")}</CardTitle></CardHeader>
-        <CardContent className="h-64">
-          {trend.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t("evaluation.noReviews")}</p>
-          ) : (
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={trend}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
-                <XAxis dataKey="week" stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <YAxis domain={[0, 10]} stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
-                <Line type="monotone" dataKey="score" stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e" }} />
-              </LineChart>
-            </ResponsiveContainer>
-          )}
+        <CardContent>
+          <ChartFrame hasData={trend.length > 0} emptyLabel={t("evaluation.noReviews")}>
+            <LineChart data={trend}>
+              <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+              <XAxis dataKey="week" stroke={chartAxisColor} fontSize={12} />
+              <YAxis domain={[0, 10]} stroke={chartAxisColor} fontSize={12} />
+              <SafeTooltip />
+              <Line type="monotone" dataKey="score" name={t("evaluation.scoreTrend")} stroke="#22c55e" strokeWidth={2} dot={{ fill: "#22c55e" }} />
+            </LineChart>
+          </ChartFrame>
         </CardContent>
       </Card>
 
