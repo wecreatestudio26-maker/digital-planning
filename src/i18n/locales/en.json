@@ -1,4 +1,5 @@
 {
+  "charts": { "noData": "No data to display" },
   "common": {
     "signIn": "Sign in",
     "signOut": "Sign out",

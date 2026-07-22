@@ -1,4 +1,5 @@
 {
+  "charts": { "noData": "Nessun dato da mostrare" },
   "common": {
     "signIn": "Accedi",
     "signOut": "Esci",

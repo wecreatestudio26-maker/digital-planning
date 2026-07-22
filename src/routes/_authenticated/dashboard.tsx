@@ -1,9 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  PieChart, Pie, Cell, Legend,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid,
+  PieChart, Pie, Cell,
 } from "recharts";
+import { ChartFrame, SafeTooltip, SafeLegend, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
 import { addDays, format, isWithinInterval, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActivities } from "@/lib/activities-store";
@@ -45,11 +46,13 @@ function Dashboard() {
 
   const byStatus = useMemo(
     () =>
-      (["pendiente", "en_progreso", "completado"] as Status[]).map((s) => ({
-        name: STATUS_LABEL[s],
-        value: activities.filter((a) => a.status === s).length,
-        key: s,
-      })),
+      (["pendiente", "en_progreso", "completado"] as Status[])
+        .map((s) => ({
+          name: STATUS_LABEL[s],
+          value: activities.filter((a) => a.status === s).length,
+          key: s,
+        }))
+        .filter((d) => d.value > 0),
     [activities],
   );
 
@@ -95,37 +98,33 @@ function Dashboard() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">{t("dashboard.byCategory")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byCategory}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
-                <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <YAxis allowDecimals={false} stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
-                />
-                <Bar dataKey="total" fill="#22c55e" radius={[6, 6, 0, 0]} />
+          <CardContent>
+            <ChartFrame hasData={byCategory.some((d) => d.total > 0)}>
+              <BarChart data={byCategory.filter((d) => d.total > 0)}>
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                <XAxis dataKey="category" stroke={chartAxisColor} fontSize={12} />
+                <YAxis allowDecimals={false} stroke={chartAxisColor} fontSize={12} />
+                <SafeTooltip />
+                <Bar dataKey="total" name={t("dashboard.totalActivities")} fill="#22c55e" radius={[6, 6, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartFrame>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-base">{t("dashboard.byStatus")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent>
+            <ChartFrame hasData={byStatus.length > 0}>
               <PieChart>
-                <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
+                <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={60} outerRadius={110} paddingAngle={2} label={({ name, value }) => `${name}: ${value}`}>
                   {byStatus.map((s) => (
                     <Cell key={s.key} fill={STATUS_COLORS[s.key]} stroke="transparent" />
                   ))}
                 </Pie>
-                <Legend />
-                <Tooltip
-                  contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
-                />
+                <SafeLegend />
+                <SafeTooltip />
               </PieChart>
-            </ResponsiveContainer>
+            </ChartFrame>
           </CardContent>
         </Card>
       </div>
