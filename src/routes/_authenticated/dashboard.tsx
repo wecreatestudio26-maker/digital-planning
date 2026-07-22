@@ -116,7 +116,7 @@ function Dashboard() {
           <CardContent>
             <ChartFrame hasData={byStatus.length > 0}>
               <PieChart>
-                <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={60} outerRadius={110} paddingAngle={2} label={(d: { name: string; value: number }) => `${d.name}: ${d.value}`}>
+                <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={60} outerRadius={110} paddingAngle={2} label={({ name, value }) => `${name}: ${value}`}>
                   {byStatus.map((s) => (
                     <Cell key={s.key} fill={STATUS_COLORS[s.key]} stroke="transparent" />
                   ))}
