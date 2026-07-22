@@ -65,11 +65,12 @@ function AssigneeBadge({ name }: { name: string }) {
 function CalendarPage() {
   const { t, i18n } = useTranslation();
   const locale = LOCALE_MAP[(i18n.resolvedLanguage as LocaleKey) ?? "es"] ?? es;
-  const { activities, update } = useActivities();
+  const { activities, update, add, remove } = useActivities();
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [cursor, setCursor] = useState(new Date());
   const [dragId, setDragId] = useState<string | null>(null);
   const [pulseToday, setPulseToday] = useState(false);
+  const [panelDay, setPanelDay] = useState<Date | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const activitiesOn = (day: Date) =>
