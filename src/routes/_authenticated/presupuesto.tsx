@@ -6,7 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Trash2, AlertTriangle, TrendingUp, Wallet, CheckCircle2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
+import { ChartFrame, SafeTooltip, SafeLegend, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
 import { useExtra, budgetActual, type BudgetItem, type BudgetSubItem } from "@/lib/extra-store";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -108,35 +109,35 @@ function BudgetPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">{t("budget.by_category")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byCat}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
-                <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
-                <Legend />
+          <CardContent>
+            <ChartFrame hasData={byCat.some((d) => d.planned > 0 || d.actual > 0)}>
+              <BarChart data={byCat.filter((d) => d.planned > 0 || d.actual > 0)}>
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                <XAxis dataKey="category" stroke={chartAxisColor} fontSize={12} />
+                <YAxis stroke={chartAxisColor} fontSize={12} tickFormatter={(v) => fmt(v)} width={80} />
+                <SafeTooltip formatter={(v: number) => fmt(v)} />
+                <SafeLegend />
                 <Bar dataKey="planned" name={t("budget.planned")} fill="#64748b" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="actual" name={t("budget.actual")} fill="#22c55e" radius={[6, 6, 0, 0]} />
               </BarChart>
-            </ResponsiveContainer>
+            </ChartFrame>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-base">{t("budget.cashflow")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
+          <CardContent>
+            <ChartFrame hasData={cashflow.some((d) => (d as { Planeado?: number }).Planeado || (d as { Real?: number }).Real)}>
               <LineChart data={cashflow}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
-                <XAxis dataKey="date" stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
-                <Legend />
-                <Line type="monotone" dataKey="Planeado" stroke="#64748b" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="Real" stroke="#22c55e" strokeWidth={2} dot={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
+                <XAxis dataKey="date" stroke={chartAxisColor} fontSize={12} />
+                <YAxis stroke={chartAxisColor} fontSize={12} tickFormatter={(v) => fmt(v)} width={80} />
+                <SafeTooltip formatter={(v: number) => fmt(v)} />
+                <SafeLegend />
+                <Line type="monotone" dataKey="Planeado" name={t("budget.planned")} stroke="#64748b" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Real" name={t("budget.actual")} stroke="#22c55e" strokeWidth={2} dot={false} />
               </LineChart>
-            </ResponsiveContainer>
+            </ChartFrame>
           </CardContent>
         </Card>
       </div>
