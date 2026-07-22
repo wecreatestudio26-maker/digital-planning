@@ -1,32 +1,85 @@
+# Plan de las 5 correcciones
 
-## Objetivo
+Basado en tus respuestas: respaldo JSON en Supabase, importar fusiona por ID/nombre, PDF como reporte con tablas, auto-guardado en toda la app.
 
-Hoy solo unas pocas vistas usan `useTranslation`. Al cambiar idioma, la mayor parte de la app sigue en español. Vamos a internacionalizar todos los textos visibles para que el cambio entre **es · en · fr · it** sea completo.
+## 1. Botón Guardar global
 
-## Alcance
+- Nuevo hook `useAppSnapshot` que serializa todos los stores de Zustand (`activities`, `gantt`, `riesgos`, `presupuesto`, `plantillas`, `reuniones`, `auto-estados`, `reglas`, `recordatorios`, `extra-store`, `productivity-store`) a un JSON.
+- Ya existe la tabla `user_app_state` (id, user_id, data jsonb, updated_at). Se usará esa; si falta alguna columna, migración menor.
+- Server functions `saveSnapshot(data)` y `loadSnapshot()` con `requireSupabaseAuth`.
+- Componente `SaveButton` en el header con estados: idle / saving (spinner) / saved ✓ (2s) / error (X + toast). Punto naranja parpadeante cuando hay `dirty=true`.
+- Store `useDirty` que se marca al llamar cualquier setter (subscribiendo con `store.subscribe`).
+- Auto-save cada 3 min si `dirty`, en toda la app autenticada.
+- `beforeunload` con confirmación si hay cambios.
+- Al cargar la app tras login: `loadSnapshot()` → hidrata cada store (con fallback a localStorage).
 
-Páginas y componentes con texto en duro a traducir:
+## 2. Gráficos
 
-- Rutas autenticadas (16): `dashboard`, `actividades`, `gantt`, `riesgos`, `presupuesto`, `habitos`, `tiempo`, `evaluacion`, `enfoque`, `equipo`, `carga`, `reuniones`, `plantillas`, `recordatorios`, `auto-estados`, `reglas`.
-- Flujo de auth: `login`, `register`, `forgot-password`, `reset-password`, `check-email`, `invite.$token`.
-- Componentes compartidos: `StatusBadge`, `AppSidebar` (textos restantes), `AuthCard`, mensajes de toast/validación frecuentes.
+Wrapper `<Chart>` común y helpers:
+- `ResponsiveContainer` con `minHeight: 320`, `width: 100%`.
+- Filtrar `data.filter(d => d.value > 0)`; si vacío → placeholder "Sin datos para mostrar".
+- Leyenda con `layout="vertical"` si >6 ítems, `layout="horizontal"` debajo si no.
+- `Tooltip` custom con nombre real + valor + %.
+- Dona: `labelLine={false}`, `outerRadius` acotado.
+- Barras: `domain={[0, 'auto']}`, sólo positivos.
+- Líneas: `connectNulls={false}`, `dot={{r:3}}`.
 
-Fuera de alcance: contenido generado por el usuario (nombres de actividades, categorías, miembros), datos de BD, y SEO/meta tags por ruta (se mantienen como están).
+Aplicar a `dashboard.tsx`, `riesgos.tsx`, `presupuesto.tsx`, `equipo.tsx`, `carga.tsx`, `gantt.tsx`, `evaluacion.tsx` (si sobreviven).
 
-## Enfoque
+## 3. Calendario — clic en día
 
-1. **Ampliar los diccionarios** `src/i18n/locales/{es,en,fr,it}.json` con namespaces por página: `dashboard.*`, `activities.*`, `gantt.*`, `risks.*`, `budget.*`, `habits.*`, `time.*`, `evaluation.*`, `focus.*`, `team.*`, `workload.*`, `meetings.*`, `templates.*`, `reminders.*`, `autostates.*`, `rules.*`, `auth.*`, `status.*`, `toast.*`.
-2. **Reemplazar literales** en cada archivo por `t("namespace.clave")` usando `const { t } = useTranslation()`. Mantener exactamente la misma UI, solo cambiar la fuente del texto.
-3. **Pluralización y variables** con interpolación de i18next (`{{count}}`, `{{name}}`) donde aplique (p. ej. "5 actividades", "Hola, {{name}}").
-4. **Verificación**: revisar dashboard tras los cambios cambiando idioma desde el `LanguageSwitcher` y confirmar que no queden cadenas en español al elegir en / fr / it.
+- Refactor `calendario.tsx`: al hacer clic en celda (no drag), abre `<Sheet>` lateral derecho.
+- Panel muestra fecha, lista de actividades del día (nombre, estado, asignado + botón editar). Sin actividades → "Sin actividades" + botón añadir.
+- Editar: formulario inline con nombre, estado, fechas, asignado, prioridad, descripción usando el store `useActivities.update`.
+- Añadir: reusa `ActivityForm` con `startDate/endDate` prellenados.
+- Todo va al mismo store global (`activities-store`) → sincroniza automáticamente con dashboard/gantt/actividades.
+
+## 4. Exportar / Importar
+
+Botones en el header (`Download`, `Upload`) junto a Guardar.
+
+**Exportar** — modal con:
+- Formatos: JSON, CSV, PDF, Excel.
+- Checkboxes: Actividades, Gantt, Reuniones, Equipo, Plantillas, Riesgos, Presupuesto.
+- JSON: snapshot filtrado. CSV: por módulo, zip mental (un CSV por módulo si múltiples). Excel: workbook con hoja por módulo (usando la librería SheetJS ya presente). PDF: reporte con tablas usando `jspdf` + `jspdf-autotable` (ya en deps por export.ts existente).
+
+**Importar** — modal con drag & drop (usar `<input type="file">` simple):
+- Detecta extensión (.json/.csv/.xlsx). Parsea a arrays de objetos.
+- Mapeo automático de campos multilenguaje (diccionario name/nombre/título → name, etc).
+- Preview de 5 primeras filas + selector manual para campos no reconocidos.
+- Validación (fechas ISO, estados válidos). Filas con error se muestran pero no bloquean.
+- Fusión por ID/nombre: si existe por `id`, `update`; si existe por `name`+fechas, `update`; si no, `add`.
+- Resumen final.
+
+## 5. Matriz de riesgos
+
+Refactor `riesgos.tsx`:
+- Matriz 5x5 compacta (h-16 por celda), impacto arriba (1-5), probabilidad izquierda (1-5).
+- Colores por nivel; celdas vacías con borde punteado.
+- Leyenda debajo (Bajo/Medio/Alto/Crítico).
+- Título con contador.
+- Filtros: nivel, responsable, estado (Select).
+- Clic en celda → `<Sheet>` lateral con lista de riesgos en esa coordenada + editar inline + eliminar + "+ Añadir riesgo" con prob/impacto prellenados.
+- Gráfico resumen: 320px, `LabelList` con valor encima, filtrar niveles con 0, tooltip con nombres de riesgos.
 
 ## Detalles técnicos
 
-- Las 4 claves de cada string se añaden a la vez en los 4 JSON para mantenerlos sincronizados.
-- Las traducciones a en / fr / it se generan a partir del texto en español existente; el usuario podrá ajustarlas luego si quiere afinar tono.
-- No se toca la lógica de negocio, ni server functions, ni la BD. Solo capa de presentación.
-- No se reorganiza la estructura de carpetas ni el routing.
+- Nuevo archivo `src/lib/snapshot.ts` — serialize/deserialize.
+- Nuevo `src/lib/snapshot.functions.ts` — server fns.
+- Nuevo `src/hooks/useDirty.ts` + `src/hooks/useAutoSave.ts`.
+- Nuevo `src/components/HeaderActions.tsx` (Save + Export + Import) montado en `__root.tsx`.
+- Nuevo `src/components/charts/SafeChart.tsx` + helpers.
+- Nuevo `src/components/ExportDialog.tsx`, `src/components/ImportDialog.tsx`.
+- Migración menor si la tabla `user_app_state` no existe con la forma esperada.
 
-## Entrega
+## Orden de entrega
 
-Dado el volumen (≈16 páginas + flujos de auth), lo haré en una sola tanda de cambios coordinados sobre los JSON y los componentes, sin pasos intermedios visibles para ti. Al terminar, la app quedará totalmente traducida en los 4 idiomas soportados.
+1. Migración/verificación de `user_app_state`.
+2. Snapshot + Save button + dirty tracking + auto-save.
+3. HeaderActions (Save primero, Export/Import esqueleto).
+4. Refactor calendario (panel día).
+5. Refactor riesgos (matriz + panel).
+6. Wrapper de gráficos + aplicarlo.
+7. Export/Import completo (modales + parsers).
+
+¿Procedo?
