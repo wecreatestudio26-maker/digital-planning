@@ -143,6 +143,7 @@ function RootLayout() {
               {t("common.appName")}
             </Link>
             <div className="ml-auto flex items-center gap-2">
+              <HeaderActions />
               <LanguageSwitcher variant="compact" />
               <SignOutButton />
             </div>
