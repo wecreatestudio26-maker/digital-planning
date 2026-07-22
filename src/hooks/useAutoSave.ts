@@ -58,10 +58,10 @@ export function useAutoSave() {
     loadedRef.current = true;
     (async () => {
       try {
-        const row = await load();
-        if (row && (row as { payload?: AppSnapshot }).payload) {
-          applySnapshot((row as { payload: AppSnapshot }).payload);
-          setLastSavedAt((row as { updated_at?: string }).updated_at ?? null);
+        const row = (await load()) as unknown as { payload?: AppSnapshot; updated_at?: string } | null;
+        if (row?.payload) {
+          applySnapshot(row.payload);
+          setLastSavedAt(row.updated_at ?? null);
         }
       } catch (e) {
         console.warn("[snapshot] load failed", e);
