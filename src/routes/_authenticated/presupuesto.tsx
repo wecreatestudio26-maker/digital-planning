@@ -115,7 +115,7 @@ function BudgetPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
                 <XAxis dataKey="category" stroke={chartAxisColor} fontSize={12} />
                 <YAxis stroke={chartAxisColor} fontSize={12} tickFormatter={(v) => fmt(v)} width={80} />
-                <SafeTooltip formatter={(v: number) => fmt(v)} />
+                <SafeTooltip formatter={(v) => fmt(Number(v))} />
                 <SafeLegend />
                 <Bar dataKey="planned" name={t("budget.planned")} fill="#64748b" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="actual" name={t("budget.actual")} fill="#22c55e" radius={[6, 6, 0, 0]} />
@@ -132,7 +132,7 @@ function BudgetPage() {
                 <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
                 <XAxis dataKey="date" stroke={chartAxisColor} fontSize={12} />
                 <YAxis stroke={chartAxisColor} fontSize={12} tickFormatter={(v) => fmt(v)} width={80} />
-                <SafeTooltip formatter={(v: number) => fmt(v)} />
+                <SafeTooltip formatter={(v) => fmt(Number(v))} />
                 <SafeLegend />
                 <Line type="monotone" dataKey="Planeado" name={t("budget.planned")} stroke="#64748b" strokeWidth={2} dot={false} />
                 <Line type="monotone" dataKey="Real" name={t("budget.actual")} stroke="#22c55e" strokeWidth={2} dot={false} />
