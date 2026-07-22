@@ -163,6 +163,7 @@ function CalendarPage() {
           dayHeaders={dayHeaders}
           pulseToday={pulseToday}
           moreLabel={t("calendar.more")}
+          onDayClick={(d) => setPanelDay(d)}
         />
       )}
       {view === "week" && (
@@ -173,6 +174,7 @@ function CalendarPage() {
           setDragId={setDragId}
           locale={locale}
           pulseToday={pulseToday}
+          onDayClick={(d) => setPanelDay(d)}
         />
       )}
       {view === "day" && (
@@ -182,8 +184,19 @@ function CalendarPage() {
           setDragId={setDragId}
           locale={locale}
           emptyLabel={t("calendar.noActivitiesDay")}
+          onEdit={() => setPanelDay(cursor)}
         />
       )}
+
+      <DayPanel
+        day={panelDay}
+        onClose={() => setPanelDay(null)}
+        activities={panelDay ? activitiesOn(panelDay) : []}
+        onAdd={add}
+        onUpdate={update}
+        onRemove={remove}
+        locale={locale}
+      />
     </div>
   );
 }
