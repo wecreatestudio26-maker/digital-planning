@@ -29,10 +29,20 @@ function EvalPage() {
   const [score, setScore] = useState(existing?.score ?? 7);
   const completed = activities.filter((a) => a.status === "completado").length;
 
+  const filterConfig: ChartFilterConfig = useMemo(() => ({
+    valueRange: { min: 1, max: 10, step: 1, label: t("chartFilters.valueRange") },
+    dateRange: true,
+  }), [t]);
+  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
+
   const trend = useMemo(() => {
-    const sorted = [...reviews].sort((a, b) => a.weekStart.localeCompare(b.weekStart)).slice(-12);
+    const sorted = [...reviews]
+      .filter((r) => r.score >= filters.min && r.score <= filters.max)
+      .filter((r) => (!filters.dateFrom || r.weekStart >= filters.dateFrom) && (!filters.dateTo || r.weekStart <= filters.dateTo))
+      .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+      .slice(-12);
     return sorted.map((r) => ({ week: r.weekStart.slice(5), score: r.score }));
-  }, [reviews]);
+  }, [reviews, filters]);
 
   const today = new Date();
   const isSunday = today.getDay() === 0;
