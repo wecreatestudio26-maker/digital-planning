@@ -64,9 +64,10 @@ interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   editing?: Activity | null;
+  prefillStartDate?: string;
 }
 
-export function ActivityForm({ open, onOpenChange, editing }: Props) {
+export function ActivityForm({ open, onOpenChange, editing, prefillStartDate }: Props) {
   const { t } = useTranslation();
   const qc = useQueryClient();
   const { add, update } = useActivities();
@@ -82,11 +83,14 @@ export function ActivityForm({ open, onOpenChange, editing }: Props) {
       if (editing) {
         const { id: _id, ...rest } = editing;
         setForm(rest);
+      } else if (prefillStartDate) {
+        setForm({ ...empty, startDate: prefillStartDate, endDate: prefillStartDate });
       } else {
         setForm(empty);
       }
     }
-  }, [open, editing]);
+  }, [open, editing, prefillStartDate]);
+
 
   const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
