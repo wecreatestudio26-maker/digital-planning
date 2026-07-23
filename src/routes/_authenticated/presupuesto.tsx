@@ -109,6 +109,10 @@ function BudgetPage() {
         <Button onClick={() => setBudgetDialog({ mode: "create" })}><Plus className="h-4 w-4" /> {t("budget.new_item")}</Button>
       </div>
 
+      <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
+
+
+
       {overbudget.length > 0 && (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 flex gap-3">
           <AlertTriangle className="h-5 w-5 text-destructive shrink-0 mt-0.5" />
