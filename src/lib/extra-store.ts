@@ -31,7 +31,9 @@ export interface Risk {
   impact: number; // 1-5
   mitigation: string;
   status: RiskStatus;
+  assignee?: string;
 }
+
 export function riskLevel(p: number, i: number) {
   const score = p * i;
   if (score >= 15) return { label: "Crítico", color: "#ef4444", score };
