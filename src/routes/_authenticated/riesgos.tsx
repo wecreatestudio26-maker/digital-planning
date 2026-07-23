@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Plus, Trash2, Pencil } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Cell } from "recharts";
-import { ChartFrame, SafeTooltip, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
-import { ChartFilters, defaultFilterState, type ChartFilterConfig, type ChartFilterState } from "@/components/charts/ChartFilters";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { riskLevel, useExtra, type Risk, type RiskStatus } from "@/lib/extra-store";
 import { useTranslation } from "react-i18next";
 
@@ -36,38 +34,8 @@ function RisksPage() {
     cerrado: t("risks.status_closed"),
   };
 
-  const allCategories = useMemo(
-    () => Array.from(new Set(risks.map((r) => r.category))).sort(),
-    [risks],
-  );
-  const statusOptions = (["abierto", "mitigado", "cerrado"] as RiskStatus[]).map((s) => ({
-    value: s, label: STATUS_LABEL[s],
-  }));
-
-  const filterConfig: ChartFilterConfig = useMemo(() => ({
-    valueRange: { min: 1, max: 25, step: 1, label: t("chartFilters.valueRange") + " (P×I)" },
-    categories: allCategories,
-    statuses: statusOptions,
-  }), [allCategories, t]);
-  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
-
-  useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      categories: prev.categories.filter((c) => allCategories.includes(c)),
-    }));
-  }, [allCategories]);
-
-  const filteredRisks = useMemo(() => risks.filter((r) => {
-    const score = r.probability * r.impact;
-    if (score < filters.min || score > filters.max) return false;
-    if (!filters.categories.includes(r.category)) return false;
-    if (!filters.statuses.includes(r.status)) return false;
-    return true;
-  }), [risks, filters]);
-
   const matrix: Risk[][][] = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => []));
-  filteredRisks.forEach((r) => matrix[5 - r.impact][r.probability - 1].push(r));
+  risks.forEach((r) => matrix[5 - r.impact][r.probability - 1].push(r));
 
   const summary = [
     { key: "Bajo", label: t("risks.level_low"), color: "#22c55e" },
@@ -76,7 +44,7 @@ function RisksPage() {
     { key: "Crítico", label: t("risks.level_critical"), color: "#ef4444" },
   ].map((lvl) => ({
     name: lvl.label,
-    value: filteredRisks.filter((r) => riskLevel(r.probability, r.impact).label === lvl.key).length,
+    value: risks.filter((r) => riskLevel(r.probability, r.impact).label === lvl.key).length,
     color: lvl.color,
   }));
 
@@ -89,8 +57,6 @@ function RisksPage() {
         </div>
         <Button onClick={() => setEditing({ mode: "create" })}><Plus className="h-4 w-4" /> {t("risks.new_risk")}</Button>
       </div>
-
-      <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
@@ -140,18 +106,18 @@ function RisksPage() {
 
         <Card>
           <CardHeader><CardTitle className="text-base">{t("risks.summary_title")}</CardTitle></CardHeader>
-          <CardContent>
-            <ChartFrame hasData={summary.some((s) => s.value > 0)}>
-              <BarChart data={summary.filter((s) => s.value > 0)}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
-                <XAxis dataKey="name" stroke={chartAxisColor} fontSize={12} />
-                <YAxis allowDecimals={false} stroke={chartAxisColor} fontSize={12} />
-                <SafeTooltip />
-                <Bar dataKey="value" name={t("risks.summary_title")} radius={[6, 6, 0, 0]}>
-                  {summary.filter((s) => s.value > 0).map((s) => <Cell key={s.name} fill={s.color} />)}
+          <CardContent className="h-64">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={summary}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
+                <XAxis dataKey="name" stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <YAxis allowDecimals={false} stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
+                <Bar dataKey="value" radius={[6, 6, 0, 0]}>
+                  {summary.map((s) => <Cell key={s.name} fill={s.color} />)}
                 </Bar>
               </BarChart>
-            </ChartFrame>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -173,7 +139,7 @@ function RisksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredRisks.map((r) => {
+              {risks.map((r) => {
                 const lvl = riskLevel(r.probability, r.impact);
                 return (
                   <TableRow key={r.id}>

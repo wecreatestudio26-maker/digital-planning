@@ -1,14 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Trash2, AlertTriangle, TrendingUp, Wallet, CheckCircle2, ChevronDown, ChevronRight, Pencil } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, LineChart, Line } from "recharts";
-import { ChartFrame, SafeTooltip, SafeLegend, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
-import { ChartFilters, defaultFilterState, type ChartFilterConfig, type ChartFilterState } from "@/components/charts/ChartFilters";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend, LineChart, Line } from "recharts";
 import { useExtra, budgetActual, type BudgetItem, type BudgetSubItem } from "@/lib/extra-store";
 import { format, parseISO } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -34,57 +32,24 @@ function BudgetPage() {
   const [subDialog, setSubDialog] = useState<{ budgetId: string; sub?: BudgetSubItem } | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const allCategories = useMemo(
-    () => Array.from(new Set(budget.map((b) => b.category))).sort(),
-    [budget],
-  );
-  const maxPlanned = useMemo(
-    () => Math.max(1000, ...budget.map((b) => Math.max(b.planned, budgetActual(b)))),
-    [budget],
-  );
-
-  const filterConfig: ChartFilterConfig = useMemo(() => ({
-    valueRange: { min: 0, max: Math.ceil(maxPlanned), step: Math.max(1, Math.round(maxPlanned / 100)), label: t("chartFilters.valueRange"), format: fmt },
-    categories: allCategories,
-    dateRange: true,
-  }), [allCategories, maxPlanned, t]);
-  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
-
-  useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      max: prev.max === 0 || prev.max > Math.ceil(maxPlanned) ? Math.ceil(maxPlanned) : prev.max,
-      categories: prev.categories.filter((c) => allCategories.includes(c)),
-    }));
-  }, [allCategories, maxPlanned]);
-
-  const filteredBudget = useMemo(() => budget.filter((b) => {
-    const value = Math.max(b.planned, budgetActual(b));
-    if (value < filters.min || value > filters.max) return false;
-    if (!filters.categories.includes(b.category)) return false;
-    if (filters.dateFrom && b.date < filters.dateFrom) return false;
-    if (filters.dateTo && b.date > filters.dateTo) return false;
-    return true;
-  }), [budget, filters]);
-
-  const planned = filteredBudget.reduce((s, b) => s + b.planned, 0);
-  const actual = filteredBudget.reduce((s, b) => s + budgetActual(b), 0);
+  const planned = budget.reduce((s, b) => s + b.planned, 0);
+  const actual = budget.reduce((s, b) => s + budgetActual(b), 0);
   const variance = actual - planned;
-  const overbudget = filteredBudget.filter((b) => budgetActual(b) > b.planned);
+  const overbudget = budget.filter((b) => budgetActual(b) > b.planned);
 
   const byCat = useMemo(() => {
     const m = new Map<string, { category: string; planned: number; actual: number }>();
-    filteredBudget.forEach((b) => {
+    budget.forEach((b) => {
       const prev = m.get(b.category) ?? { category: b.category, planned: 0, actual: 0 };
       m.set(b.category, { category: b.category, planned: prev.planned + b.planned, actual: prev.actual + budgetActual(b) });
     });
     return Array.from(m.values());
-  }, [filteredBudget]);
+  }, [budget]);
 
   const cashflow = useMemo(() => {
     type Event = { date: string; planned: number; actual: number };
     const events: Event[] = [];
-    filteredBudget.forEach((b) => {
+    budget.forEach((b) => {
       events.push({ date: b.date, planned: b.planned, actual: 0 });
       b.subItems.forEach((s) => events.push({ date: s.date, planned: 0, actual: s.amount }));
     });
@@ -95,7 +60,7 @@ function BudgetPage() {
       cumActual += e.actual;
       return { date: format(parseISO(e.date), "dd MMM"), Planeado: cumPlanned, Real: cumActual };
     });
-  }, [filteredBudget]);
+  }, [budget]);
 
   const projection = (actual / Math.max(1, planned)) * 100;
 
@@ -108,10 +73,6 @@ function BudgetPage() {
         </div>
         <Button onClick={() => setBudgetDialog({ mode: "create" })}><Plus className="h-4 w-4" /> {t("budget.new_item")}</Button>
       </div>
-
-      <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
-
-
 
       {overbudget.length > 0 && (
         <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-4 flex gap-3">
@@ -147,35 +108,35 @@ function BudgetPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">{t("budget.by_category")}</CardTitle></CardHeader>
-          <CardContent>
-            <ChartFrame hasData={byCat.some((d) => d.planned > 0 || d.actual > 0)}>
-              <BarChart data={byCat.filter((d) => d.planned > 0 || d.actual > 0)}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
-                <XAxis dataKey="category" stroke={chartAxisColor} fontSize={12} />
-                <YAxis stroke={chartAxisColor} fontSize={12} tickFormatter={(v) => fmt(v)} width={80} />
-                <SafeTooltip formatter={(v) => fmt(Number(v))} />
-                <SafeLegend />
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={byCat}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
+                <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
+                <Legend />
                 <Bar dataKey="planned" name={t("budget.planned")} fill="#64748b" radius={[6, 6, 0, 0]} />
                 <Bar dataKey="actual" name={t("budget.actual")} fill="#22c55e" radius={[6, 6, 0, 0]} />
               </BarChart>
-            </ChartFrame>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-base">{t("budget.cashflow")}</CardTitle></CardHeader>
-          <CardContent>
-            <ChartFrame hasData={cashflow.some((d) => (d as { Planeado?: number }).Planeado || (d as { Real?: number }).Real)}>
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
               <LineChart data={cashflow}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
-                <XAxis dataKey="date" stroke={chartAxisColor} fontSize={12} />
-                <YAxis stroke={chartAxisColor} fontSize={12} tickFormatter={(v) => fmt(v)} width={80} />
-                <SafeTooltip formatter={(v) => fmt(Number(v))} />
-                <SafeLegend />
-                <Line type="monotone" dataKey="Planeado" name={t("budget.planned")} stroke="#64748b" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="Real" name={t("budget.actual")} stroke="#22c55e" strokeWidth={2} dot={false} />
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
+                <XAxis dataKey="date" stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
+                <Legend />
+                <Line type="monotone" dataKey="Planeado" stroke="#64748b" strokeWidth={2} dot={false} />
+                <Line type="monotone" dataKey="Real" stroke="#22c55e" strokeWidth={2} dot={false} />
               </LineChart>
-            </ChartFrame>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>
@@ -183,7 +144,7 @@ function BudgetPage() {
       <Card>
         <CardHeader><CardTitle className="text-base">{t("budget.items")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {filteredBudget.map((b) => {
+          {budget.map((b) => {
             const real = budgetActual(b);
             const diff = real - b.planned;
             const over = diff > 0;

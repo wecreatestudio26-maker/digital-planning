@@ -1,11 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-  PieChart, Pie, Cell,
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+  PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { ChartFrame, SafeTooltip, SafeLegend, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
-import { ChartFilters, defaultFilterState, type ChartFilterConfig, type ChartFilterState } from "@/components/charts/ChartFilters";
 import { addDays, format, isWithinInterval, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActivities } from "@/lib/activities-store";
@@ -34,65 +32,30 @@ function Dashboard() {
   const { t } = useTranslation();
   const activities = useActivities((s) => s.activities);
 
-  const allCategories = useMemo(
-    () => Array.from(new Set(activities.map((a) => a.category))).sort(),
-    [activities],
-  );
-  const statusOptions = (["pendiente", "en_progreso", "completado"] as Status[]).map((s) => ({
-    value: s,
-    label: STATUS_LABEL[s],
-  }));
-
-  const filterConfig: ChartFilterConfig = useMemo(
-    () => ({ categories: allCategories, statuses: statusOptions, dateRange: true }),
-    [allCategories],
-  );
-  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
-
-  // Reset filter selections if the pool changes.
-  useEffect(() => {
-    setFilters((prev) => ({
-      ...prev,
-      categories: prev.categories.filter((c) => allCategories.includes(c)),
-    }));
-  }, [allCategories]);
-
-  const filtered = useMemo(() => {
-    return activities.filter((a) => {
-      if (filterConfig.categories && !filters.categories.includes(a.category)) return false;
-      if (filterConfig.statuses && !filters.statuses.includes(a.status)) return false;
-      if (filters.dateFrom && a.endDate < filters.dateFrom) return false;
-      if (filters.dateTo && a.startDate > filters.dateTo) return false;
-      return true;
-    });
-  }, [activities, filters, filterConfig]);
-
-  const total = filtered.length;
-  const completados = filtered.filter((a) => a.status === "completado").length;
-  const enProgreso = filtered.filter((a) => a.status === "en_progreso").length;
-  const pendientes = filtered.filter((a) => a.status === "pendiente").length;
+  const total = activities.length;
+  const completados = activities.filter((a) => a.status === "completado").length;
+  const enProgreso = activities.filter((a) => a.status === "en_progreso").length;
+  const pendientes = activities.filter((a) => a.status === "pendiente").length;
 
   const byCategory = useMemo(() => {
     const m = new Map<string, number>();
-    filtered.forEach((a) => m.set(a.category, (m.get(a.category) ?? 0) + 1));
+    activities.forEach((a) => m.set(a.category, (m.get(a.category) ?? 0) + 1));
     return Array.from(m, ([category, total]) => ({ category, total }));
-  }, [filtered]);
+  }, [activities]);
 
   const byStatus = useMemo(
     () =>
-      (["pendiente", "en_progreso", "completado"] as Status[])
-        .map((s) => ({
-          name: STATUS_LABEL[s],
-          value: filtered.filter((a) => a.status === s).length,
-          key: s,
-        }))
-        .filter((d) => d.value > 0),
-    [filtered],
+      (["pendiente", "en_progreso", "completado"] as Status[]).map((s) => ({
+        name: STATUS_LABEL[s],
+        value: activities.filter((a) => a.status === s).length,
+        key: s,
+      })),
+    [activities],
   );
 
   const today = new Date();
   const weekEnd = addDays(today, 7);
-  const upcoming = filtered
+  const upcoming = activities
     .filter((a) => {
       try {
         return isWithinInterval(parseISO(a.endDate), { start: today, end: weekEnd })
@@ -115,8 +78,6 @@ function Dashboard() {
         <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
       </div>
 
-      <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
-
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
           <Card key={m.label}>
@@ -134,33 +95,37 @@ function Dashboard() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">{t("dashboard.byCategory")}</CardTitle></CardHeader>
-          <CardContent>
-            <ChartFrame hasData={byCategory.some((d) => d.total > 0)}>
-              <BarChart data={byCategory.filter((d) => d.total > 0)}>
-                <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
-                <XAxis dataKey="category" stroke={chartAxisColor} fontSize={12} />
-                <YAxis allowDecimals={false} stroke={chartAxisColor} fontSize={12} />
-                <SafeTooltip />
-                <Bar dataKey="total" name={t("dashboard.totalActivities")} fill="#22c55e" radius={[6, 6, 0, 0]} />
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={byCategory}>
+                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
+                <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <YAxis allowDecimals={false} stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                <Tooltip
+                  contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
+                />
+                <Bar dataKey="total" fill="#22c55e" radius={[6, 6, 0, 0]} />
               </BarChart>
-            </ChartFrame>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-base">{t("dashboard.byStatus")}</CardTitle></CardHeader>
-          <CardContent>
-            <ChartFrame hasData={byStatus.length > 0}>
+          <CardContent className="h-72">
+            <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={60} outerRadius={110} paddingAngle={2} label={({ name, value }) => `${name}: ${value}`}>
+                <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
                   {byStatus.map((s) => (
                     <Cell key={s.key} fill={STATUS_COLORS[s.key]} stroke="transparent" />
                   ))}
                 </Pie>
-                <SafeLegend />
-                <SafeTooltip />
+                <Legend />
+                <Tooltip
+                  contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
+                />
               </PieChart>
-            </ChartFrame>
+            </ResponsiveContainer>
           </CardContent>
         </Card>
       </div>

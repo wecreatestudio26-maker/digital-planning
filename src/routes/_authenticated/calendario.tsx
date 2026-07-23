@@ -5,18 +5,14 @@ import {
   isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths,
 } from "date-fns";
 import { es, enUS, fr, it, type Locale } from "date-fns/locale";
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Label } from "@/components/ui/label";
 import { useActivities } from "@/lib/activities-store";
 import { cn } from "@/lib/utils";
-import type { Activity, Status, Priority } from "@/lib/types";
+import type { Activity, Status } from "@/lib/types";
 
 export const Route = createFileRoute("/_authenticated/calendario")({
   head: () => ({
@@ -65,12 +61,11 @@ function AssigneeBadge({ name }: { name: string }) {
 function CalendarPage() {
   const { t, i18n } = useTranslation();
   const locale = LOCALE_MAP[(i18n.resolvedLanguage as LocaleKey) ?? "es"] ?? es;
-  const { activities, update, add, remove } = useActivities();
+  const { activities, update } = useActivities();
   const [view, setView] = useState<"month" | "week" | "day">("month");
   const [cursor, setCursor] = useState(new Date());
   const [dragId, setDragId] = useState<string | null>(null);
   const [pulseToday, setPulseToday] = useState(false);
-  const [panelDay, setPanelDay] = useState<Date | null>(null);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const activitiesOn = (day: Date) =>
@@ -163,7 +158,6 @@ function CalendarPage() {
           dayHeaders={dayHeaders}
           pulseToday={pulseToday}
           moreLabel={t("calendar.more")}
-          onDayClick={(d) => setPanelDay(d)}
         />
       )}
       {view === "week" && (
@@ -174,7 +168,6 @@ function CalendarPage() {
           setDragId={setDragId}
           locale={locale}
           pulseToday={pulseToday}
-          onDayClick={(d) => setPanelDay(d)}
         />
       )}
       {view === "day" && (
@@ -184,19 +177,8 @@ function CalendarPage() {
           setDragId={setDragId}
           locale={locale}
           emptyLabel={t("calendar.noActivitiesDay")}
-          onEdit={() => setPanelDay(cursor)}
         />
       )}
-
-      <DayPanel
-        day={panelDay}
-        onClose={() => setPanelDay(null)}
-        activities={panelDay ? activitiesOn(panelDay) : []}
-        onAdd={add}
-        onUpdate={update}
-        onRemove={remove}
-        locale={locale}
-      />
     </div>
   );
 }
@@ -221,7 +203,7 @@ function ActivityPill({ a, onDragStart }: { a: Activity; onDragStart: () => void
 }
 
 function MonthGrid({
-  cursor, activitiesOn, onDrop, setDragId, dayHeaders, pulseToday, moreLabel, onDayClick,
+  cursor, activitiesOn, onDrop, setDragId, dayHeaders, pulseToday, moreLabel,
 }: {
   cursor: Date;
   activitiesOn: (d: Date) => Activity[];
@@ -230,7 +212,6 @@ function MonthGrid({
   dayHeaders: string[];
   pulseToday: boolean;
   moreLabel: string;
-  onDayClick: (d: Date) => void;
 }) {
   const monthStart = startOfMonth(cursor);
   const monthEnd = endOfMonth(cursor);
@@ -257,9 +238,8 @@ function MonthGrid({
               data-date={format(day, "yyyy-MM-dd")}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(day)}
-              onClick={() => onDayClick(day)}
               className={cn(
-                "min-h-[130px] border-b border-r border-border p-1.5 flex flex-col gap-1 transition-all cursor-pointer hover:bg-accent/20",
+                "min-h-[130px] border-b border-r border-border p-1.5 flex flex-col gap-1 transition-all",
                 !isCur && "bg-background/40 text-muted-foreground/60",
                 isToday && pulseToday && "ring-2 ring-primary ring-inset",
               )}
@@ -274,17 +254,12 @@ function MonthGrid({
                   {format(day, "d")}
                 </span>
               </div>
-              <div className="flex flex-col gap-1 overflow-hidden" onClick={(e) => e.stopPropagation()}>
+              <div className="flex flex-col gap-1 overflow-hidden">
                 {items.slice(0, 3).map((a) => (
                   <ActivityPill key={a.id} a={a} onDragStart={() => setDragId(a.id)} />
                 ))}
                 {items.length > 3 && (
-                  <button
-                    onClick={() => onDayClick(day)}
-                    className="text-[10px] text-primary hover:underline text-left"
-                  >
-                    +{items.length - 3} {moreLabel}
-                  </button>
+                  <span className="text-[10px] text-muted-foreground">+{items.length - 3} {moreLabel}</span>
                 )}
               </div>
             </div>
@@ -296,7 +271,7 @@ function MonthGrid({
 }
 
 function WeekView({
-  cursor, activitiesOn, onDrop, setDragId, locale, pulseToday, onDayClick,
+  cursor, activitiesOn, onDrop, setDragId, locale, pulseToday,
 }: {
   cursor: Date;
   activitiesOn: (d: Date) => Activity[];
@@ -304,7 +279,6 @@ function WeekView({
   setDragId: (id: string | null) => void;
   locale: Locale;
   pulseToday: boolean;
-  onDayClick: (d: Date) => void;
 }) {
   const start = startOfWeek(cursor, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -321,9 +295,8 @@ function WeekView({
               data-date={format(day, "yyyy-MM-dd")}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(day)}
-              onClick={() => onDayClick(day)}
               className={cn(
-                "min-h-[420px] border-r border-border p-2 flex flex-col gap-2 transition-all cursor-pointer hover:bg-accent/20",
+                "min-h-[420px] border-r border-border p-2 flex flex-col gap-2 transition-all",
                 isToday && pulseToday && "ring-2 ring-primary ring-inset",
               )}
             >
@@ -336,11 +309,9 @@ function WeekView({
                   isToday && "bg-primary text-primary-foreground font-semibold",
                 )}>{format(day, "d")}</span>
               </div>
-              <div onClick={(e) => e.stopPropagation()} className="flex flex-col gap-2">
-                {items.map((a) => (
-                  <ActivityPill key={a.id} a={a} onDragStart={() => setDragId(a.id)} />
-                ))}
-              </div>
+              {items.map((a) => (
+                <ActivityPill key={a.id} a={a} onDragStart={() => setDragId(a.id)} />
+              ))}
             </div>
           );
         })}
@@ -349,20 +320,16 @@ function WeekView({
   );
 }
 
-function DayView({ day, activities, setDragId, locale, emptyLabel, onEdit }: {
+function DayView({ day, activities, setDragId, locale, emptyLabel }: {
   day: Date;
   activities: Activity[];
   setDragId: (id: string | null) => void;
   locale: Locale;
   emptyLabel: string;
-  onEdit: () => void;
 }) {
   return (
     <Card className="p-4">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-medium capitalize">{format(day, "EEEE dd MMMM", { locale })}</h3>
-        <Button variant="outline" size="sm" onClick={onEdit}><Plus className="h-4 w-4 mr-1" />Detalles</Button>
-      </div>
+      <h3 className="mb-3 font-medium capitalize">{format(day, "EEEE dd MMMM", { locale })}</h3>
       {activities.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyLabel}</p>
       ) : (
@@ -392,125 +359,6 @@ function DayView({ day, activities, setDragId, locale, emptyLabel, onEdit }: {
     </Card>
   );
 }
-
-function DayPanel({
-  day, onClose, activities, onAdd, onUpdate, onRemove, locale,
-}: {
-  day: Date | null;
-  onClose: () => void;
-  activities: Activity[];
-  onAdd: (a: Omit<Activity, "id">) => void;
-  onUpdate: (id: string, p: Partial<Activity>) => void;
-  onRemove: (id: string) => void;
-  locale: Locale;
-}) {
-  const [creating, setCreating] = useState(false);
-  const [draft, setDraft] = useState<Omit<Activity, "id">>({
-    name: "", category: "Trabajo", startDate: "", endDate: "", assignee: "",
-    priority: "media", status: "pendiente",
-  });
-
-  const open = day !== null;
-  const dayStr = day ? format(day, "yyyy-MM-dd") : "";
-
-  return (
-    <Sheet open={open} onOpenChange={(o) => !o && onClose()}>
-      <SheetContent className="w-full sm:max-w-md overflow-y-auto">
-        <SheetHeader>
-          <SheetTitle className="capitalize">
-            {day ? format(day, "EEEE dd 'de' MMMM yyyy", { locale }) : ""}
-          </SheetTitle>
-        </SheetHeader>
-
-        <div className="mt-6 space-y-4">
-          {activities.length === 0 && !creating && (
-            <p className="text-sm text-muted-foreground">Sin actividades este día.</p>
-          )}
-
-          <ul className="space-y-3">
-            {activities.map((a) => (
-              <li key={a.id} className="border rounded-md p-3 space-y-2">
-                <div className="flex items-start justify-between gap-2">
-                  <Input
-                    value={a.name}
-                    onChange={(e) => onUpdate(a.id, { name: e.target.value })}
-                    className="font-medium"
-                  />
-                  <Button variant="ghost" size="icon" onClick={() => onRemove(a.id)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <Label className="text-xs">Estado</Label>
-                    <Select value={a.status} onValueChange={(v) => onUpdate(a.id, { status: v as Status })}>
-                      <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pendiente">Pendiente</SelectItem>
-                        <SelectItem value="en_progreso">En progreso</SelectItem>
-                        <SelectItem value="completado">Completado</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Prioridad</Label>
-                    <Select value={a.priority} onValueChange={(v) => onUpdate(a.id, { priority: v as Priority })}>
-                      <SelectTrigger className="h-8"><SelectValue /></SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="alta">Alta</SelectItem>
-                        <SelectItem value="media">Media</SelectItem>
-                        <SelectItem value="baja">Baja</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div>
-                    <Label className="text-xs">Inicio</Label>
-                    <Input type="date" value={a.startDate} onChange={(e) => onUpdate(a.id, { startDate: e.target.value })} className="h-8" />
-                  </div>
-                  <div>
-                    <Label className="text-xs">Fin</Label>
-                    <Input type="date" value={a.endDate} onChange={(e) => onUpdate(a.id, { endDate: e.target.value })} className="h-8" />
-                  </div>
-                  <div className="col-span-2">
-                    <Label className="text-xs">Responsable</Label>
-                    <Input value={a.assignee} onChange={(e) => onUpdate(a.id, { assignee: e.target.value })} className="h-8" />
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ul>
-
-          {creating ? (
-            <div className="border rounded-md p-3 space-y-2 bg-accent/20">
-              <Input placeholder="Nombre de la actividad" value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
-              <div className="grid grid-cols-2 gap-2">
-                <Input placeholder="Categoría" value={draft.category} onChange={(e) => setDraft({ ...draft, category: e.target.value })} />
-                <Input placeholder="Responsable" value={draft.assignee} onChange={(e) => setDraft({ ...draft, assignee: e.target.value })} />
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (!draft.name.trim()) return;
-                    onAdd({ ...draft, startDate: dayStr, endDate: dayStr });
-                    setDraft({ name: "", category: "Trabajo", startDate: "", endDate: "", assignee: "", priority: "media", status: "pendiente" });
-                    setCreating(false);
-                  }}
-                >Guardar</Button>
-                <Button size="sm" variant="ghost" onClick={() => setCreating(false)}>Cancelar</Button>
-              </div>
-            </div>
-          ) : (
-            <Button variant="outline" className="w-full" onClick={() => setCreating(true)}>
-              <Plus className="h-4 w-4 mr-1" />Añadir actividad
-            </Button>
-          )}
-        </div>
-      </SheetContent>
-    </Sheet>
-  );
-}
-
 
 // keep referenced to silence unused import warnings in some bundlers
 void useEffect;

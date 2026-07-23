@@ -22,7 +22,6 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { Toaster } from "@/components/ui/sonner";
-import { HeaderActions } from "@/components/HeaderActions";
 
 function NotFoundComponent() {
   return (
@@ -143,7 +142,6 @@ function RootLayout() {
               {t("common.appName")}
             </Link>
             <div className="ml-auto flex items-center gap-2">
-              <HeaderActions />
               <LanguageSwitcher variant="compact" />
               <SignOutButton />
             </div>

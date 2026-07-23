@@ -1,6 +1,4 @@
 {
-  "charts": { "noData": "Nessun dato da mostrare" },
-  "chartFilters": { "title": "Filtri grafici", "valueRange": "Intervallo di valori", "categories": "Categorie", "statuses": "Stati", "dateRange": "Intervallo di date", "active": "Attivo", "clear": "Cancella" },
   "common": {
     "signIn": "Accedi",
     "signOut": "Esci",

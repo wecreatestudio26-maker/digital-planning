@@ -1,6 +1,4 @@
 {
-  "charts": { "noData": "No data to display" },
-  "chartFilters": { "title": "Chart filters", "valueRange": "Value range", "categories": "Categories", "statuses": "Statuses", "dateRange": "Date range", "active": "Active", "clear": "Clear" },
   "common": {
     "signIn": "Sign in",
     "signOut": "Sign out",
