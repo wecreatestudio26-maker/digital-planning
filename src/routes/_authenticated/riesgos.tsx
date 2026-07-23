@@ -173,7 +173,7 @@ function RisksPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {risks.map((r) => {
+              {filteredRisks.map((r) => {
                 const lvl = riskLevel(r.probability, r.impact);
                 return (
                   <TableRow key={r.id}>
