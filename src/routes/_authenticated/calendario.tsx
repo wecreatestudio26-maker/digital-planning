@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import {
   addDays, addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format,
   isSameDay, isSameMonth, parseISO, startOfMonth, startOfWeek, subMonths,
@@ -13,6 +13,7 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useActivities } from "@/lib/activities-store";
 import { cn } from "@/lib/utils";
 import type { Activity, Status } from "@/lib/types";
+import { DayActivitiesSheet } from "@/components/DayActivitiesSheet";
 
 export const Route = createFileRoute("/_authenticated/calendario")({
   head: () => ({
@@ -66,6 +67,8 @@ function CalendarPage() {
   const [cursor, setCursor] = useState(new Date());
   const [dragId, setDragId] = useState<string | null>(null);
   const [pulseToday, setPulseToday] = useState(false);
+  const [openDay, setOpenDay] = useState<Date | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
 
   const activitiesOn = (day: Date) =>
@@ -88,6 +91,11 @@ function CalendarPage() {
     const newEnd = format(new Date(day.getTime() + diff), "yyyy-MM-dd");
     update(a.id, { startDate: newStart, endDate: newEnd });
     setDragId(null);
+  };
+
+  const openDaySheet = (day: Date) => {
+    setOpenDay(day);
+    setSheetOpen(true);
   };
 
   const shift = (dir: 1 | -1) => {
@@ -158,6 +166,7 @@ function CalendarPage() {
           dayHeaders={dayHeaders}
           pulseToday={pulseToday}
           moreLabel={t("calendar.more")}
+          onDayClick={openDaySheet}
         />
       )}
       {view === "week" && (
@@ -168,6 +177,7 @@ function CalendarPage() {
           setDragId={setDragId}
           locale={locale}
           pulseToday={pulseToday}
+          onDayClick={openDaySheet}
         />
       )}
       {view === "day" && (
@@ -177,8 +187,11 @@ function CalendarPage() {
           setDragId={setDragId}
           locale={locale}
           emptyLabel={t("calendar.noActivitiesDay")}
+          onDayClick={() => openDaySheet(cursor)}
         />
       )}
+
+      <DayActivitiesSheet day={openDay} open={sheetOpen} onOpenChange={setSheetOpen} />
     </div>
   );
 }
@@ -187,7 +200,8 @@ function ActivityPill({ a, onDragStart }: { a: Activity; onDragStart: () => void
   return (
     <div
       draggable
-      onDragStart={onDragStart}
+      onDragStart={(e) => { e.stopPropagation(); onDragStart(); }}
+      onClick={(e) => e.stopPropagation()}
       className="group rounded-md bg-accent/60 hover:bg-accent px-1.5 py-1 cursor-grab active:cursor-grabbing"
       title={`${a.name} · ${a.assignee}`}
     >
@@ -203,7 +217,7 @@ function ActivityPill({ a, onDragStart }: { a: Activity; onDragStart: () => void
 }
 
 function MonthGrid({
-  cursor, activitiesOn, onDrop, setDragId, dayHeaders, pulseToday, moreLabel,
+  cursor, activitiesOn, onDrop, setDragId, dayHeaders, pulseToday, moreLabel, onDayClick,
 }: {
   cursor: Date;
   activitiesOn: (d: Date) => Activity[];
@@ -212,6 +226,7 @@ function MonthGrid({
   dayHeaders: string[];
   pulseToday: boolean;
   moreLabel: string;
+  onDayClick: (d: Date) => void;
 }) {
   const monthStart = startOfMonth(cursor);
   const monthEnd = endOfMonth(cursor);
@@ -238,8 +253,9 @@ function MonthGrid({
               data-date={format(day, "yyyy-MM-dd")}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(day)}
+              onClick={() => onDayClick(day)}
               className={cn(
-                "min-h-[130px] border-b border-r border-border p-1.5 flex flex-col gap-1 transition-all",
+                "min-h-[130px] border-b border-r border-border p-1.5 flex flex-col gap-1 transition-all cursor-pointer hover:bg-accent/20",
                 !isCur && "bg-background/40 text-muted-foreground/60",
                 isToday && pulseToday && "ring-2 ring-primary ring-inset",
               )}
@@ -271,7 +287,7 @@ function MonthGrid({
 }
 
 function WeekView({
-  cursor, activitiesOn, onDrop, setDragId, locale, pulseToday,
+  cursor, activitiesOn, onDrop, setDragId, locale, pulseToday, onDayClick,
 }: {
   cursor: Date;
   activitiesOn: (d: Date) => Activity[];
@@ -279,6 +295,7 @@ function WeekView({
   setDragId: (id: string | null) => void;
   locale: Locale;
   pulseToday: boolean;
+  onDayClick: (d: Date) => void;
 }) {
   const start = startOfWeek(cursor, { weekStartsOn: 1 });
   const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
@@ -295,8 +312,9 @@ function WeekView({
               data-date={format(day, "yyyy-MM-dd")}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => onDrop(day)}
+              onClick={() => onDayClick(day)}
               className={cn(
-                "min-h-[420px] border-r border-border p-2 flex flex-col gap-2 transition-all",
+                "min-h-[420px] border-r border-border p-2 flex flex-col gap-2 transition-all cursor-pointer hover:bg-accent/20",
                 isToday && pulseToday && "ring-2 ring-primary ring-inset",
               )}
             >
@@ -320,15 +338,16 @@ function WeekView({
   );
 }
 
-function DayView({ day, activities, setDragId, locale, emptyLabel }: {
+function DayView({ day, activities, setDragId, locale, emptyLabel, onDayClick }: {
   day: Date;
   activities: Activity[];
   setDragId: (id: string | null) => void;
   locale: Locale;
   emptyLabel: string;
+  onDayClick: () => void;
 }) {
   return (
-    <Card className="p-4">
+    <Card className="p-4 cursor-pointer hover:bg-accent/10" onClick={onDayClick}>
       <h3 className="mb-3 font-medium capitalize">{format(day, "EEEE dd MMMM", { locale })}</h3>
       {activities.length === 0 ? (
         <p className="text-sm text-muted-foreground">{emptyLabel}</p>
@@ -338,7 +357,7 @@ function DayView({ day, activities, setDragId, locale, emptyLabel }: {
             <li
               key={a.id}
               draggable
-              onDragStart={() => setDragId(a.id)}
+              onDragStart={(e) => { e.stopPropagation(); setDragId(a.id); }}
               className="flex items-start gap-3 rounded-md border border-border p-3 hover:bg-accent/40"
             >
               <span className={cn("mt-1.5 h-2.5 w-2.5 rounded-full shrink-0", statusBar[a.status])} />
@@ -359,6 +378,3 @@ function DayView({ day, activities, setDragId, locale, emptyLabel }: {
     </Card>
   );
 }
-
-// keep referenced to silence unused import warnings in some bundlers
-void useEffect;

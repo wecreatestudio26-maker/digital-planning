@@ -29,8 +29,8 @@ export function exportToPDF(activities: Activity[]) {
   doc.save(`planeacion-${Date.now()}.pdf`);
 }
 
-export function exportToExcel(activities: Activity[]) {
-  const rows = activities.map((a, i) => ({
+function activitiesRows(activities: Activity[]) {
+  return activities.map((a, i) => ({
     "#": i + 1,
     Actividad: a.name,
     Descripción: a.description ?? "",
@@ -44,8 +44,32 @@ export function exportToExcel(activities: Activity[]) {
     Estado: STATUS_LABEL[a.status],
     Notas: a.notes ?? "",
   }));
-  const ws = XLSX.utils.json_to_sheet(rows);
+}
+
+export function exportToExcel(activities: Activity[]) {
+  const ws = XLSX.utils.json_to_sheet(activitiesRows(activities));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Actividades");
   XLSX.writeFile(wb, `planeacion-${Date.now()}.xlsx`);
+}
+
+function downloadBlob(content: string, filename: string, mime: string) {
+  const blob = new Blob([content], { type: mime });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export function exportToJSON(data: Record<string, unknown>) {
+  downloadBlob(JSON.stringify(data, null, 2), `planeacion-${Date.now()}.json`, "application/json");
+}
+
+export function exportToCSV(activities: Activity[]) {
+  const rows = activitiesRows(activities);
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const csv = XLSX.utils.sheet_to_csv(ws);
+  downloadBlob(csv, `planeacion-${Date.now()}.csv`, "text/csv;charset=utf-8;");
 }

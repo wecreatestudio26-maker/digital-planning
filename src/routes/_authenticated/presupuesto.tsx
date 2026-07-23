@@ -108,38 +108,53 @@ function BudgetPage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">{t("budget.by_category")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byCat}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
-                <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
-                <Legend />
-                <Bar dataKey="planned" name={t("budget.planned")} fill="#64748b" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="actual" name={t("budget.actual")} fill="#22c55e" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent>
+            {byCat.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">Sin datos</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={320}>
+                <BarChart data={byCat} margin={{ top: 16, right: 12, left: 0, bottom: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
+                  <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                  <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} domain={[0, "auto"]} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
+                    formatter={(v, name) => [fmt(Number(v)), String(name)]}
+                  />
+                  <Legend verticalAlign="bottom" height={32} />
+                  <Bar dataKey="planned" name={t("budget.planned")} fill="#64748b" radius={[6, 6, 0, 0]} />
+                  <Bar dataKey="actual" name={t("budget.actual")} fill="#22c55e" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-base">{t("budget.cashflow")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={cashflow}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
-                <XAxis dataKey="date" stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <Tooltip contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }} />
-                <Legend />
-                <Line type="monotone" dataKey="Planeado" stroke="#64748b" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="Real" stroke="#22c55e" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+          <CardContent>
+            {cashflow.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">Sin datos</p>
+            ) : (
+              <ResponsiveContainer width="100%" height={320}>
+                <LineChart data={cashflow} margin={{ top: 16, right: 12, left: 0, bottom: 4 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
+                  <XAxis dataKey="date" stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                  <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+                  <Tooltip
+                    contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
+                    formatter={(v, name) => [fmt(Number(v)), String(name)]}
+                  />
+                  <Legend verticalAlign="bottom" height={32} />
+                  <Line type="monotone" dataKey="Planeado" stroke="#64748b" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
+                  <Line type="monotone" dataKey="Real" stroke="#22c55e" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
+                </LineChart>
+              </ResponsiveContainer>
+            )}
           </CardContent>
         </Card>
       </div>
+
 
       <Card>
         <CardHeader><CardTitle className="text-base">{t("budget.items")}</CardTitle></CardHeader>
