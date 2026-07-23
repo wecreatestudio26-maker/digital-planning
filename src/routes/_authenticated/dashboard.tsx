@@ -50,7 +50,7 @@ function Dashboard() {
   const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
 
   // Reset filter selections if the pool changes.
-  useMemo(() => {
+  useEffect(() => {
     setFilters((prev) => ({
       ...prev,
       categories: prev.categories.filter((c) => allCategories.includes(c)),
