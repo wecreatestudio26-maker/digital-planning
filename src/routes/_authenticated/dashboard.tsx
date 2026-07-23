@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
-  PieChart, Pie, Cell, Legend,
+  PieChart, Pie, Cell, Legend, LabelList,
 } from "recharts";
 import { addDays, format, isWithinInterval, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +11,8 @@ import { STATUS_LABEL, type Status } from "@/lib/types";
 import { CheckCircle2, Clock, ListChecks, Loader2 } from "lucide-react";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useTranslation } from "react-i18next";
+import { ChartFrame, EmptyChart, RichTooltip } from "@/lib/chart-utils";
+
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -40,18 +42,22 @@ function Dashboard() {
   const byCategory = useMemo(() => {
     const m = new Map<string, number>();
     activities.forEach((a) => m.set(a.category, (m.get(a.category) ?? 0) + 1));
-    return Array.from(m, ([category, total]) => ({ category, total }));
+    return Array.from(m, ([category, total]) => ({ category, total })).filter((r) => r.total > 0);
   }, [activities]);
 
   const byStatus = useMemo(
     () =>
-      (["pendiente", "en_progreso", "completado"] as Status[]).map((s) => ({
-        name: STATUS_LABEL[s],
-        value: activities.filter((a) => a.status === s).length,
-        key: s,
-      })),
+      (["pendiente", "en_progreso", "completado"] as Status[])
+        .map((s) => ({
+          name: STATUS_LABEL[s],
+          value: activities.filter((a) => a.status === s).length,
+          key: s,
+        }))
+        .filter((s) => s.value > 0),
     [activities],
   );
+  const statusTotal = byStatus.reduce((s, x) => s + x.value, 0);
+
 
   const today = new Date();
   const weekEnd = addDays(today, 7);
@@ -95,39 +101,46 @@ function Dashboard() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
           <CardHeader><CardTitle className="text-base">{t("dashboard.byCategory")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={byCategory}>
-                <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
-                <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <YAxis allowDecimals={false} stroke="oklch(0.72 0.02 255)" fontSize={12} />
-                <Tooltip
-                  contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
-                />
-                <Bar dataKey="total" fill="#22c55e" radius={[6, 6, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+          <CardContent>
+            <ChartFrame>
+              {byCategory.length === 0 ? <EmptyChart /> : (
+                <ResponsiveContainer width="100%" height={320}>
+                  <BarChart data={byCategory} margin={{ top: 16, right: 12, left: 0, bottom: 4 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="oklch(1 0 0 / 0.08)" />
+                    <XAxis dataKey="category" stroke="oklch(0.72 0.02 255)" fontSize={12} />
+                    <YAxis allowDecimals={false} stroke="oklch(0.72 0.02 255)" fontSize={12} domain={[0, "auto"]} />
+                    <Tooltip content={<RichTooltip />} cursor={{ fill: "oklch(1 0 0 / 0.05)" }} />
+                    <Bar dataKey="total" name={t("dashboard.activities")} fill="#22c55e" radius={[6, 6, 0, 0]}>
+                      <LabelList dataKey="total" position="top" fill="oklch(0.85 0.02 255)" fontSize={11} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              )}
+            </ChartFrame>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader><CardTitle className="text-base">{t("dashboard.byStatus")}</CardTitle></CardHeader>
-          <CardContent className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={50} outerRadius={90} paddingAngle={2}>
-                  {byStatus.map((s) => (
-                    <Cell key={s.key} fill={STATUS_COLORS[s.key]} stroke="transparent" />
-                  ))}
-                </Pie>
-                <Legend />
-                <Tooltip
-                  contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
-                />
-              </PieChart>
-            </ResponsiveContainer>
+          <CardContent>
+            <ChartFrame>
+              {byStatus.length === 0 ? <EmptyChart /> : (
+                <ResponsiveContainer width="100%" height={320}>
+                  <PieChart>
+                    <Pie data={byStatus} dataKey="value" nameKey="name" innerRadius={55} outerRadius={95} paddingAngle={2} label={(e: { name?: string; value?: number }) => `${e.name}: ${e.value}`} labelLine={false}>
+                      {byStatus.map((s) => (
+                        <Cell key={s.key} fill={STATUS_COLORS[s.key]} stroke="transparent" />
+                      ))}
+                    </Pie>
+                    <Legend verticalAlign="bottom" height={32} />
+                    <Tooltip content={<RichTooltip total={statusTotal} />} />
+                  </PieChart>
+                </ResponsiveContainer>
+              )}
+            </ChartFrame>
           </CardContent>
         </Card>
+
       </div>
 
       <Card>

@@ -21,7 +21,9 @@ import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ExportImportBar } from "@/components/ExportImportBar";
 import { Toaster } from "@/components/ui/sonner";
+
 
 function NotFoundComponent() {
   return (
@@ -142,10 +144,12 @@ function RootLayout() {
               {t("common.appName")}
             </Link>
             <div className="ml-auto flex items-center gap-2">
+              <ExportImportBar />
               <LanguageSwitcher variant="compact" />
               <SignOutButton />
             </div>
           </header>
+
           <main className="flex-1 p-4 md:p-6">
             <Outlet />
           </main>
