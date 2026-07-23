@@ -83,7 +83,14 @@
   "calendar": {
     "title": "Calendar",
     "noActivitiesDay": "No activities on this day.",
-    "more": "more"
+    "more": "more",
+    "sheet": {
+      "count_one": "{{count}} activity",
+      "count_other": "{{count}} activities",
+      "count": "{{count}} activities",
+      "empty": "No activities on this day.",
+      "addActivity": "Add activity"
+    }
   },
   "activity": {
     "newTitle": "New activity",
@@ -222,7 +229,8 @@
     "byStatus": "Distribution by status",
     "upcoming": "Due soon (7 days)",
     "noUpcoming": "No activities due this week.",
-    "due": "due"
+    "due": "due",
+    "activities": "Activities"
   },
   "activities": {
     "title": "Activities",
@@ -442,7 +450,17 @@
     "mitigation": "Mitigation",
     "cancel": "Cancel",
     "save_changes": "Save changes",
-    "create": "Create"
+    "create": "Create",
+    "filter_level": "Level",
+    "filter_status": "Status",
+    "filter_assignee": "Assignee",
+    "filter_all": "All",
+    "impact_label": "Impact →",
+    "probability_label": "Probability →",
+    "cell_desc": "Risks located at this coordinate.",
+    "cell_empty": "No risks here.",
+    "no_risks": "No risks match the current filters.",
+    "assignee": "Assignee"
   },
   "autostates": {
     "title": "Automatic status changes",
@@ -586,5 +604,41 @@
     "taskNamePlaceholder": "Task name",
     "days": "days",
     "addTask": "Add task"
+  },
+  "io": {
+    "export": "Export",
+    "import": "Import",
+    "exportTitle": "Export data",
+    "exportDesc": "Choose a format and which modules to include.",
+    "importTitle": "Import data",
+    "importDesc": "Drag a file here or click to select one.",
+    "format": "Format",
+    "content": "Content",
+    "dropHint": "Drag your file here or click to select",
+    "mapColumns": "Map columns",
+    "skip": "Skip",
+    "merge": "Append",
+    "replace": "Replace all",
+    "rowsValid": "valid rows",
+    "rowsInvalid": "invalid rows",
+    "rowMissing": "Row {{row}}: missing {{fields}}",
+    "rowBadDate": "Row {{row}}: invalid date",
+    "emptyFile": "The file is empty",
+    "parseError": "Could not read the file",
+    "exportSuccess": "Exported successfully",
+    "importSuccess": "{{count}} activities imported",
+    "imported": "{{count}} activities imported",
+    "skipped": "{{count}} skipped",
+    "csvNeedsActivities": "CSV only supports Activities",
+    "pdfNeedsActivities": "PDF only supports Activities",
+    "excelNeedsActivities": "Excel only supports Activities",
+    "onlyActivitiesHint": "This format only exports the Activities section.",
+    "section": {
+      "activities": "Activities",
+      "gantt": "Gantt charts",
+      "meetings": "Meetings",
+      "team": "Team",
+      "templates": "Templates"
+    }
   }
 }

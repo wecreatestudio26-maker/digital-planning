@@ -83,7 +83,14 @@
   "calendar": {
     "title": "Calendrier",
     "noActivitiesDay": "Aucune activité ce jour-là.",
-    "more": "de plus"
+    "more": "de plus",
+    "sheet": {
+      "count_one": "{{count}} activité",
+      "count_other": "{{count}} activités",
+      "count": "{{count}} activités",
+      "empty": "Aucune activité ce jour.",
+      "addActivity": "Ajouter une activité"
+    }
   },
   "activity": {
     "newTitle": "Nouvelle activité",
@@ -222,7 +229,8 @@
     "byStatus": "Répartition par statut",
     "upcoming": "À échéance prochaine (7 jours)",
     "noUpcoming": "Aucune activité à échéance cette semaine.",
-    "due": "échéance"
+    "due": "échéance",
+    "activities": "Activités"
   },
   "activities": {
     "title": "Activités",
@@ -442,7 +450,17 @@
     "mitigation": "Atténuation",
     "cancel": "Annuler",
     "save_changes": "Enregistrer les modifications",
-    "create": "Créer"
+    "create": "Créer",
+    "filter_level": "Niveau",
+    "filter_status": "Statut",
+    "filter_assignee": "Responsable",
+    "filter_all": "Tous",
+    "impact_label": "Impact →",
+    "probability_label": "Probabilité →",
+    "cell_desc": "Risques à cette coordonnée.",
+    "cell_empty": "Aucun risque ici.",
+    "no_risks": "Aucun risque ne correspond aux filtres.",
+    "assignee": "Responsable"
   },
   "autostates": {
     "title": "Changement automatique de statuts",
@@ -586,5 +604,41 @@
     "taskNamePlaceholder": "Nom de la tâche",
     "days": "jours",
     "addTask": "Ajouter une tâche"
+  },
+  "io": {
+    "export": "Exporter",
+    "import": "Importer",
+    "exportTitle": "Exporter les données",
+    "exportDesc": "Choisissez un format et les modules à inclure.",
+    "importTitle": "Importer des données",
+    "importDesc": "Glissez un fichier ou cliquez pour en choisir un.",
+    "format": "Format",
+    "content": "Contenu",
+    "dropHint": "Glissez votre fichier ici ou cliquez pour choisir",
+    "mapColumns": "Associer les colonnes",
+    "skip": "Ignorer",
+    "merge": "Ajouter",
+    "replace": "Tout remplacer",
+    "rowsValid": "lignes valides",
+    "rowsInvalid": "lignes invalides",
+    "rowMissing": "Ligne {{row}} : champs manquants {{fields}}",
+    "rowBadDate": "Ligne {{row}} : date invalide",
+    "emptyFile": "Le fichier est vide",
+    "parseError": "Impossible de lire le fichier",
+    "exportSuccess": "Exporté avec succès",
+    "importSuccess": "{{count}} activités importées",
+    "imported": "{{count}} activités importées",
+    "skipped": "{{count}} ignorées",
+    "csvNeedsActivities": "CSV ne prend en charge que les Activités",
+    "pdfNeedsActivities": "PDF ne prend en charge que les Activités",
+    "excelNeedsActivities": "Excel ne prend en charge que les Activités",
+    "onlyActivitiesHint": "Ce format n'exporte que la section Activités.",
+    "section": {
+      "activities": "Activités",
+      "gantt": "Diagrammes de Gantt",
+      "meetings": "Réunions",
+      "team": "Équipe",
+      "templates": "Modèles"
+    }
   }
 }

@@ -83,7 +83,14 @@
   "calendar": {
     "title": "Calendario",
     "noActivitiesDay": "Sin actividades en este día.",
-    "more": "más"
+    "more": "más",
+    "sheet": {
+      "count_one": "{{count}} actividad",
+      "count_other": "{{count}} actividades",
+      "count": "{{count}} actividades",
+      "empty": "Sin actividades este día.",
+      "addActivity": "Añadir actividad"
+    }
   },
   "activity": {
     "newTitle": "Nueva actividad",
@@ -222,7 +229,8 @@
     "byStatus": "Distribución por estado",
     "upcoming": "Próximas a vencer (7 días)",
     "noUpcoming": "No hay actividades por vencer esta semana.",
-    "due": "vence"
+    "due": "vence",
+    "activities": "Actividades"
   },
   "activities": {
     "title": "Actividades",
@@ -442,7 +450,17 @@
     "mitigation": "Mitigación",
     "cancel": "Cancelar",
     "save_changes": "Guardar cambios",
-    "create": "Crear"
+    "create": "Crear",
+    "filter_level": "Nivel",
+    "filter_status": "Estado",
+    "filter_assignee": "Responsable",
+    "filter_all": "Todos",
+    "impact_label": "Impacto →",
+    "probability_label": "Probabilidad →",
+    "cell_desc": "Riesgos ubicados en esta coordenada.",
+    "cell_empty": "Sin riesgos aquí.",
+    "no_risks": "No hay riesgos con los filtros actuales.",
+    "assignee": "Responsable"
   },
   "autostates": {
     "title": "Cambio automático de estados",
@@ -586,5 +604,41 @@
     "taskNamePlaceholder": "Nombre de la tarea",
     "days": "días",
     "addTask": "Agregar tarea"
+  },
+  "io": {
+    "export": "Exportar",
+    "import": "Importar",
+    "exportTitle": "Exportar datos",
+    "exportDesc": "Elige el formato y qué módulos incluir.",
+    "importTitle": "Importar datos",
+    "importDesc": "Arrastra un archivo o haz clic para seleccionarlo.",
+    "format": "Formato",
+    "content": "Contenido",
+    "dropHint": "Arrastra tu archivo aquí o haz clic para seleccionar",
+    "mapColumns": "Asignar columnas",
+    "skip": "Ignorar",
+    "merge": "Añadir",
+    "replace": "Reemplazar todo",
+    "rowsValid": "filas válidas",
+    "rowsInvalid": "filas inválidas",
+    "rowMissing": "Fila {{row}}: faltan campos {{fields}}",
+    "rowBadDate": "Fila {{row}}: fecha inválida",
+    "emptyFile": "El archivo está vacío",
+    "parseError": "No se pudo leer el archivo",
+    "exportSuccess": "Exportado correctamente",
+    "importSuccess": "{{count}} actividades importadas",
+    "imported": "{{count}} actividades importadas",
+    "skipped": "{{count}} omitidas",
+    "csvNeedsActivities": "CSV solo soporta Actividades",
+    "pdfNeedsActivities": "PDF solo soporta Actividades",
+    "excelNeedsActivities": "Excel solo soporta Actividades",
+    "onlyActivitiesHint": "Este formato exporta solo la sección de Actividades.",
+    "section": {
+      "activities": "Actividades",
+      "gantt": "Diagramas Gantt",
+      "meetings": "Reuniones",
+      "team": "Equipo",
+      "templates": "Plantillas"
+    }
   }
 }
