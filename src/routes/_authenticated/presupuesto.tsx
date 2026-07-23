@@ -34,24 +34,57 @@ function BudgetPage() {
   const [subDialog, setSubDialog] = useState<{ budgetId: string; sub?: BudgetSubItem } | null>(null);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 
-  const planned = budget.reduce((s, b) => s + b.planned, 0);
-  const actual = budget.reduce((s, b) => s + budgetActual(b), 0);
+  const allCategories = useMemo(
+    () => Array.from(new Set(budget.map((b) => b.category))).sort(),
+    [budget],
+  );
+  const maxPlanned = useMemo(
+    () => Math.max(1000, ...budget.map((b) => Math.max(b.planned, budgetActual(b)))),
+    [budget],
+  );
+
+  const filterConfig: ChartFilterConfig = useMemo(() => ({
+    valueRange: { min: 0, max: Math.ceil(maxPlanned), step: Math.max(1, Math.round(maxPlanned / 100)), label: t("chartFilters.valueRange"), format: fmt },
+    categories: allCategories,
+    dateRange: true,
+  }), [allCategories, maxPlanned, t]);
+  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
+
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      max: prev.max === 0 || prev.max > Math.ceil(maxPlanned) ? Math.ceil(maxPlanned) : prev.max,
+      categories: prev.categories.filter((c) => allCategories.includes(c)),
+    }));
+  }, [allCategories, maxPlanned]);
+
+  const filteredBudget = useMemo(() => budget.filter((b) => {
+    const value = Math.max(b.planned, budgetActual(b));
+    if (value < filters.min || value > filters.max) return false;
+    if (!filters.categories.includes(b.category)) return false;
+    if (filters.dateFrom && b.date < filters.dateFrom) return false;
+    if (filters.dateTo && b.date > filters.dateTo) return false;
+    return true;
+  }), [budget, filters]);
+
+  const planned = filteredBudget.reduce((s, b) => s + b.planned, 0);
+  const actual = filteredBudget.reduce((s, b) => s + budgetActual(b), 0);
   const variance = actual - planned;
-  const overbudget = budget.filter((b) => budgetActual(b) > b.planned);
+  const overbudget = filteredBudget.filter((b) => budgetActual(b) > b.planned);
 
   const byCat = useMemo(() => {
     const m = new Map<string, { category: string; planned: number; actual: number }>();
-    budget.forEach((b) => {
+    filteredBudget.forEach((b) => {
       const prev = m.get(b.category) ?? { category: b.category, planned: 0, actual: 0 };
       m.set(b.category, { category: b.category, planned: prev.planned + b.planned, actual: prev.actual + budgetActual(b) });
     });
     return Array.from(m.values());
-  }, [budget]);
+  }, [filteredBudget]);
 
   const cashflow = useMemo(() => {
     type Event = { date: string; planned: number; actual: number };
     const events: Event[] = [];
-    budget.forEach((b) => {
+    filteredBudget.forEach((b) => {
       events.push({ date: b.date, planned: b.planned, actual: 0 });
       b.subItems.forEach((s) => events.push({ date: s.date, planned: 0, actual: s.amount }));
     });
@@ -62,7 +95,7 @@ function BudgetPage() {
       cumActual += e.actual;
       return { date: format(parseISO(e.date), "dd MMM"), Planeado: cumPlanned, Real: cumActual };
     });
-  }, [budget]);
+  }, [filteredBudget]);
 
   const projection = (actual / Math.max(1, planned)) * 100;
 
