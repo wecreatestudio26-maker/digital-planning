@@ -1,5 +1,6 @@
 {
   "charts": { "noData": "Aucune donnée à afficher" },
+  "chartFilters": { "title": "Filtres de graphique", "valueRange": "Plage de valeurs", "categories": "Catégories", "statuses": "Statuts", "dateRange": "Plage de dates", "active": "Actif", "clear": "Effacer" },
   "common": {
     "signIn": "Se connecter",
     "signOut": "Déconnexion",
