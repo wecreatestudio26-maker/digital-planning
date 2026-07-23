@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_codes: {
+        Row: {
+          code: string
+          created_at: string
+          email_buyer: string | null
+          id: string
+          metadata: Json
+          redeemed_at: string | null
+          redeemed_by_user_id: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          email_buyer?: string | null
+          id?: string
+          metadata?: Json
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          source: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          email_buyer?: string | null
+          id?: string
+          metadata?: Json
+          redeemed_at?: string | null
+          redeemed_by_user_id?: string | null
+          source?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       categories: {
         Row: {
           color: string
@@ -255,6 +294,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_app_state: {
+        Row: {
+          created_at: string
+          payload: Json
+          updated_at: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          payload?: Json
+          updated_at?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          payload?: Json
+          updated_at?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -312,6 +375,28 @@ export type Database = {
       is_admin: { Args: never; Returns: boolean }
       is_org_member: { Args: { _org: string; _user: string }; Returns: boolean }
       is_org_owner: { Args: { _org: string; _user: string }; Returns: boolean }
+      is_super_admin: { Args: never; Returns: boolean }
+      redeem_access_code: {
+        Args: { _code: string; _user: string }
+        Returns: {
+          code: string
+          created_at: string
+          email_buyer: string | null
+          id: string
+          metadata: Json
+          redeemed_at: string | null
+          redeemed_by_user_id: string | null
+          source: string
+          status: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "access_codes"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       transfer_ownership: {
         Args: { _new_owner: string; _org: string }
         Returns: undefined
