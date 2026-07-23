@@ -119,7 +119,7 @@ function BudgetPage() {
                   <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} domain={[0, "auto"]} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
                     contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
-                    formatter={(v: number, name: string) => [fmt(v), name]}
+                    formatter={(v, name) => [fmt(Number(v)), String(name)]}
                   />
                   <Legend verticalAlign="bottom" height={32} />
                   <Bar dataKey="planned" name={t("budget.planned")} fill="#64748b" radius={[6, 6, 0, 0]} />
@@ -143,7 +143,7 @@ function BudgetPage() {
                   <YAxis stroke="oklch(0.72 0.02 255)" fontSize={12} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
                   <Tooltip
                     contentStyle={{ background: "oklch(0.255 0.035 260)", border: "1px solid oklch(1 0 0 / 0.1)", borderRadius: 8 }}
-                    formatter={(v: number, name: string) => [fmt(v), name]}
+                    formatter={(v, name) => [fmt(Number(v)), String(name)]}
                   />
                   <Legend verticalAlign="bottom" height={32} />
                   <Line type="monotone" dataKey="Planeado" stroke="#64748b" strokeWidth={2} dot={{ r: 3 }} connectNulls={false} />
