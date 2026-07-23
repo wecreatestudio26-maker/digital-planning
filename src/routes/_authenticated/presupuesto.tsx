@@ -183,7 +183,7 @@ function BudgetPage() {
       <Card>
         <CardHeader><CardTitle className="text-base">{t("budget.items")}</CardTitle></CardHeader>
         <CardContent className="space-y-2">
-          {budget.map((b) => {
+          {filteredBudget.map((b) => {
             const real = budgetActual(b);
             const diff = real - b.planned;
             const over = diff > 0;
