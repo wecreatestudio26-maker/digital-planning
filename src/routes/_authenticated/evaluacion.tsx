@@ -82,7 +82,8 @@ function EvalPage() {
 
       <Card>
         <CardHeader><CardTitle className="text-base">{t("evaluation.scoreTrend")}</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
           <ChartFrame hasData={trend.length > 0} emptyLabel={t("evaluation.noReviews")}>
             <LineChart data={trend}>
               <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />
