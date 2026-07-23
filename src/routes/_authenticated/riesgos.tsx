@@ -36,8 +36,38 @@ function RisksPage() {
     cerrado: t("risks.status_closed"),
   };
 
+  const allCategories = useMemo(
+    () => Array.from(new Set(risks.map((r) => r.category))).sort(),
+    [risks],
+  );
+  const statusOptions = (["abierto", "mitigado", "cerrado"] as RiskStatus[]).map((s) => ({
+    value: s, label: STATUS_LABEL[s],
+  }));
+
+  const filterConfig: ChartFilterConfig = useMemo(() => ({
+    valueRange: { min: 1, max: 25, step: 1, label: t("chartFilters.valueRange") + " (P×I)" },
+    categories: allCategories,
+    statuses: statusOptions,
+  }), [allCategories, t]);
+  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
+
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      categories: prev.categories.filter((c) => allCategories.includes(c)),
+    }));
+  }, [allCategories]);
+
+  const filteredRisks = useMemo(() => risks.filter((r) => {
+    const score = r.probability * r.impact;
+    if (score < filters.min || score > filters.max) return false;
+    if (!filters.categories.includes(r.category)) return false;
+    if (!filters.statuses.includes(r.status)) return false;
+    return true;
+  }), [risks, filters]);
+
   const matrix: Risk[][][] = Array.from({ length: 5 }, () => Array.from({ length: 5 }, () => []));
-  risks.forEach((r) => matrix[5 - r.impact][r.probability - 1].push(r));
+  filteredRisks.forEach((r) => matrix[5 - r.impact][r.probability - 1].push(r));
 
   const summary = [
     { key: "Bajo", label: t("risks.level_low"), color: "#22c55e" },
@@ -46,7 +76,7 @@ function RisksPage() {
     { key: "Crítico", label: t("risks.level_critical"), color: "#ef4444" },
   ].map((lvl) => ({
     name: lvl.label,
-    value: risks.filter((r) => riskLevel(r.probability, r.impact).label === lvl.key).length,
+    value: filteredRisks.filter((r) => riskLevel(r.probability, r.impact).label === lvl.key).length,
     color: lvl.color,
   }));
 
@@ -59,6 +89,8 @@ function RisksPage() {
         </div>
         <Button onClick={() => setEditing({ mode: "create" })}><Plus className="h-4 w-4" /> {t("risks.new_risk")}</Button>
       </div>
+
+      <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="lg:col-span-2">
