@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
 import { ChartFrame, SafeTooltip, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
+import { ChartFilters, defaultFilterState, type ChartFilterConfig, type ChartFilterState } from "@/components/charts/ChartFilters";
 import { useProductivity, weekStartStr } from "@/lib/productivity-store";
 import { useActivities } from "@/lib/activities-store";
 import { useTranslation } from "react-i18next";
@@ -28,10 +29,20 @@ function EvalPage() {
   const [score, setScore] = useState(existing?.score ?? 7);
   const completed = activities.filter((a) => a.status === "completado").length;
 
+  const filterConfig: ChartFilterConfig = useMemo(() => ({
+    valueRange: { min: 1, max: 10, step: 1, label: t("chartFilters.valueRange") },
+    dateRange: true,
+  }), [t]);
+  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
+
   const trend = useMemo(() => {
-    const sorted = [...reviews].sort((a, b) => a.weekStart.localeCompare(b.weekStart)).slice(-12);
+    const sorted = [...reviews]
+      .filter((r) => r.score >= filters.min && r.score <= filters.max)
+      .filter((r) => (!filters.dateFrom || r.weekStart >= filters.dateFrom) && (!filters.dateTo || r.weekStart <= filters.dateTo))
+      .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+      .slice(-12);
     return sorted.map((r) => ({ week: r.weekStart.slice(5), score: r.score }));
-  }, [reviews]);
+  }, [reviews, filters]);
 
   const today = new Date();
   const isSunday = today.getDay() === 0;
@@ -71,7 +82,8 @@ function EvalPage() {
 
       <Card>
         <CardHeader><CardTitle className="text-base">{t("evaluation.scoreTrend")}</CardTitle></CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
+          <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
           <ChartFrame hasData={trend.length > 0} emptyLabel={t("evaluation.noReviews")}>
             <LineChart data={trend}>
               <CartesianGrid strokeDasharray="3 3" stroke={chartGridColor} />

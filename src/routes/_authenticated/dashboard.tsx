@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
 import { ChartFrame, SafeTooltip, SafeLegend, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
+import { ChartFilters, defaultFilterState, type ChartFilterConfig, type ChartFilterState } from "@/components/charts/ChartFilters";
 import { addDays, format, isWithinInterval, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActivities } from "@/lib/activities-store";
@@ -33,32 +34,65 @@ function Dashboard() {
   const { t } = useTranslation();
   const activities = useActivities((s) => s.activities);
 
-  const total = activities.length;
-  const completados = activities.filter((a) => a.status === "completado").length;
-  const enProgreso = activities.filter((a) => a.status === "en_progreso").length;
-  const pendientes = activities.filter((a) => a.status === "pendiente").length;
+  const allCategories = useMemo(
+    () => Array.from(new Set(activities.map((a) => a.category))).sort(),
+    [activities],
+  );
+  const statusOptions = (["pendiente", "en_progreso", "completado"] as Status[]).map((s) => ({
+    value: s,
+    label: STATUS_LABEL[s],
+  }));
+
+  const filterConfig: ChartFilterConfig = useMemo(
+    () => ({ categories: allCategories, statuses: statusOptions, dateRange: true }),
+    [allCategories],
+  );
+  const [filters, setFilters] = useState<ChartFilterState>(() => defaultFilterState(filterConfig));
+
+  // Reset filter selections if the pool changes.
+  useEffect(() => {
+    setFilters((prev) => ({
+      ...prev,
+      categories: prev.categories.filter((c) => allCategories.includes(c)),
+    }));
+  }, [allCategories]);
+
+  const filtered = useMemo(() => {
+    return activities.filter((a) => {
+      if (filterConfig.categories && !filters.categories.includes(a.category)) return false;
+      if (filterConfig.statuses && !filters.statuses.includes(a.status)) return false;
+      if (filters.dateFrom && a.endDate < filters.dateFrom) return false;
+      if (filters.dateTo && a.startDate > filters.dateTo) return false;
+      return true;
+    });
+  }, [activities, filters, filterConfig]);
+
+  const total = filtered.length;
+  const completados = filtered.filter((a) => a.status === "completado").length;
+  const enProgreso = filtered.filter((a) => a.status === "en_progreso").length;
+  const pendientes = filtered.filter((a) => a.status === "pendiente").length;
 
   const byCategory = useMemo(() => {
     const m = new Map<string, number>();
-    activities.forEach((a) => m.set(a.category, (m.get(a.category) ?? 0) + 1));
+    filtered.forEach((a) => m.set(a.category, (m.get(a.category) ?? 0) + 1));
     return Array.from(m, ([category, total]) => ({ category, total }));
-  }, [activities]);
+  }, [filtered]);
 
   const byStatus = useMemo(
     () =>
       (["pendiente", "en_progreso", "completado"] as Status[])
         .map((s) => ({
           name: STATUS_LABEL[s],
-          value: activities.filter((a) => a.status === s).length,
+          value: filtered.filter((a) => a.status === s).length,
           key: s,
         }))
         .filter((d) => d.value > 0),
-    [activities],
+    [filtered],
   );
 
   const today = new Date();
   const weekEnd = addDays(today, 7);
-  const upcoming = activities
+  const upcoming = filtered
     .filter((a) => {
       try {
         return isWithinInterval(parseISO(a.endDate), { start: today, end: weekEnd })
@@ -80,6 +114,8 @@ function Dashboard() {
         <h2 className="text-2xl font-semibold tracking-tight">Dashboard</h2>
         <p className="text-sm text-muted-foreground">{t("dashboard.subtitle")}</p>
       </div>
+
+      <ChartFilters config={filterConfig} value={filters} onChange={setFilters} />
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {metrics.map((m) => (
