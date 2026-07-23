@@ -1,10 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid,
   PieChart, Pie, Cell,
 } from "recharts";
 import { ChartFrame, SafeTooltip, SafeLegend, chartAxisColor, chartGridColor } from "@/components/charts/SafeChart";
+import { ChartFilters, defaultFilterState, type ChartFilterConfig, type ChartFilterState } from "@/components/charts/ChartFilters";
 import { addDays, format, isWithinInterval, parseISO } from "date-fns";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useActivities } from "@/lib/activities-store";
