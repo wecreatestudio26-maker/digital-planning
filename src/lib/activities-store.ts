@@ -8,7 +8,7 @@ function seed(): Activity[] {
   const d = (offset: number) => format(addDays(base, offset), "yyyy-MM-dd");
   return [
     {
-      id: crypto.randomUUID(),
+      id: "seed-1",
       name: "Kickoff del proyecto",
       description: "Reunión inicial con el equipo y stakeholders.",
       category: "Reuniones",
@@ -22,7 +22,7 @@ function seed(): Activity[] {
       notes: "Llevar presentación de roadmap.",
     },
     {
-      id: crypto.randomUUID(),
+      id: "seed-2",
       name: "Diseño de wireframes",
       category: "Proyecto",
       startDate: d(4),
@@ -32,7 +32,7 @@ function seed(): Activity[] {
       status: "en_progreso",
     },
     {
-      id: crypto.randomUUID(),
+      id: "seed-3",
       name: "Curso de TypeScript",
       category: "Estudio",
       startDate: d(10),
@@ -42,7 +42,7 @@ function seed(): Activity[] {
       status: "pendiente",
     },
     {
-      id: crypto.randomUUID(),
+      id: "seed-4",
       name: "Entrega sprint 1",
       category: "Trabajo",
       startDate: d(15),
@@ -54,7 +54,7 @@ function seed(): Activity[] {
       status: "en_progreso",
     },
     {
-      id: crypto.randomUUID(),
+      id: "seed-5",
       name: "Revisión mensual",
       category: "Trabajo",
       startDate: d(22),
