@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { SUPPORTED_LANGS, type Lang } from "@/i18n";
+import { SUPPORTED_LANGS, LANG_STORAGE_KEY, type Lang } from "@/i18n";
 
 const LABELS: Record<Lang, string> = {
   es: "ES — Español",
