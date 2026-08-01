@@ -1,6 +1,6 @@
 import { Globe } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { SUPPORTED_LANGS, type Lang } from "@/i18n";
+import { SUPPORTED_LANGS, LANG_STORAGE_KEY, type Lang } from "@/i18n";
 
 const LABELS: Record<Lang, string> = {
   es: "ES — Español",
@@ -23,7 +23,12 @@ export function LanguageSwitcher({
       <select
         aria-label="Language"
         value={lang}
-        onChange={(e) => i18n.changeLanguage(e.target.value)}
+        onChange={(e) => {
+          const next = e.target.value;
+          window.localStorage.setItem(LANG_STORAGE_KEY, next);
+          document.documentElement.lang = next;
+          void i18n.changeLanguage(next);
+        }}
         className={
           variant === "compact"
             ? "appearance-none pl-7 pr-2 py-1 text-xs rounded-md border border-border bg-background hover:bg-accent/40 focus:outline-none focus:ring-2 focus:ring-primary/30 cursor-pointer"
