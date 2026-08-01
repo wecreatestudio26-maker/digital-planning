@@ -1,10 +1,14 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
 import type { Activity } from "./types";
 import { PRIORITY_LABEL, STATUS_LABEL } from "./types";
 
-export function exportToPDF(activities: Activity[]) {
+// Heavy browser-only libraries (jspdf, xlsx) are imported dynamically so they
+// never enter the SSR/worker bundle.
+
+export async function exportToPDF(activities: Activity[]) {
+  const [{ jsPDF }, { default: autoTable }] = await Promise.all([
+    import("jspdf"),
+    import("jspdf-autotable"),
+  ]);
   const doc = new jsPDF({ orientation: "landscape" });
   doc.setFontSize(16);
   doc.text("Planeación de Actividades", 14, 16);
@@ -46,7 +50,8 @@ function activitiesRows(activities: Activity[]) {
   }));
 }
 
-export function exportToExcel(activities: Activity[]) {
+export async function exportToExcel(activities: Activity[]) {
+  const XLSX = await import("xlsx");
   const ws = XLSX.utils.json_to_sheet(activitiesRows(activities));
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Actividades");
@@ -67,9 +72,9 @@ export function exportToJSON(data: Record<string, unknown>) {
   downloadBlob(JSON.stringify(data, null, 2), `planeacion-${Date.now()}.json`, "application/json");
 }
 
-export function exportToCSV(activities: Activity[]) {
-  const rows = activitiesRows(activities);
-  const ws = XLSX.utils.json_to_sheet(rows);
+export async function exportToCSV(activities: Activity[]) {
+  const XLSX = await import("xlsx");
+  const ws = XLSX.utils.json_to_sheet(activitiesRows(activities));
   const csv = XLSX.utils.sheet_to_csv(ws);
   downloadBlob(csv, `planeacion-${Date.now()}.csv`, "text/csv;charset=utf-8;");
 }
