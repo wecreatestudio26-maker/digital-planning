@@ -1,5 +1,4 @@
 import { useMemo, useRef, useState } from "react";
-import * as XLSX from "xlsx";
 import { Download, Upload } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
@@ -173,10 +172,11 @@ function normPriority(v: string): Priority {
 
 function normDate(v: unknown): string | null {
   if (v == null || v === "") return null;
-  // Excel serial
-  if (typeof v === "number") {
-    const d = XLSX.SSF.parse_date_code(v);
-    if (d) return `${d.y}-${String(d.m).padStart(2, "0")}-${String(d.d).padStart(2, "0")}`;
+  // Excel serial (days since 1899-12-30)
+  if (typeof v === "number" && isFinite(v)) {
+    const ms = Math.round((v - 25569) * 86400000);
+    const d = new Date(ms);
+    if (!isNaN(d.getTime())) return d.toISOString().slice(0, 10);
   }
   const s = String(v).trim();
   const d = new Date(s);
@@ -212,6 +212,7 @@ function ImportDialog({ open, onOpenChange }: { open: boolean; onOpenChange: (v:
         const data = JSON.parse(text);
         rows = Array.isArray(data) ? data : Array.isArray(data.activities) ? data.activities : [];
       } else {
+        const XLSX = await import("xlsx");
         const wb = XLSX.read(buf, { type: "array" });
         const ws = wb.Sheets[wb.SheetNames[0]];
         rows = XLSX.utils.sheet_to_json(ws, { defval: "" });
