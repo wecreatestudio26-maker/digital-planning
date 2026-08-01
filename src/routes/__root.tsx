@@ -16,7 +16,7 @@ import { AuthProvider, useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 
 import appCss from "../styles.css?url";
-import "@/i18n";
+import { syncClientLanguage } from "@/i18n";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
