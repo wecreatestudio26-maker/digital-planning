@@ -90,7 +90,7 @@ const today = () => format(new Date(), "yyyy-MM-dd");
 
 const seedHabits = (): Habit[] => {
   const log: Record<string, boolean> = {};
-  for (let i = 0; i < 20; i++) log[format(addDays(new Date(), -i), "yyyy-MM-dd")] = Math.random() > 0.3;
+  for (let i = 0; i < 20; i++) log[format(addDays(new Date(), -i), "yyyy-MM-dd")] = i % 3 !== 0;
   return [
     { id: "h1", name: "Ejercicio 30 min", log },
     { id: "h2", name: "Leer 20 páginas", log: { ...log } },
@@ -105,7 +105,7 @@ const seedTime = (): TimeEntry[] => {
       id: `t${i}`,
       taskName: ["Diseño", "Desarrollo", "Reunión", "QA"][i % 4],
       project: ["Web", "App móvil", "Marketing"][i % 3],
-      minutes: 30 + Math.floor(Math.random() * 180),
+      minutes: 30 + ((i * 37) % 180),
       date: format(addDays(new Date(), -i), "yyyy-MM-dd"),
     });
   }
